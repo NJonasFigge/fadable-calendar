@@ -11,4 +11,4 @@ install: venv
 
 run:
 	@echo "Running the app..."
-	@. venv/bin/activate && uvicorn backend.main:APP --reload
+	@. venv/bin/activate && uvicorn backend.api:APP --reload
