@@ -1,16 +1,103 @@
 <head>
   <meta charset="UTF-8">
-  <title>PoC App</title>
-  <link rel="manifest" href="/manifest.json">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fadable Calendar PoC</title>
+  <link rel="manifest" href="/manifest.json" crossorigin="use-credentials">
+  <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
-  <h1>PoC läuft 🚀</h1>
-  <div id="status">–</div>
+  <h1>Fadable Calendar PoC</h1>
+  <p>Status: <span id="status">Lade...</span></p>
+  <div id="calendar-container">
+    <div id="week-2026-01">
+      <div class="week-header">
+        <div class="week-header-labels">
+          <span class="week-label-year">2026</span>
+          <span class="week-label-month">January</span>
+          <span class="week-label-separator">|</span>
+          <span class="week-label-weeknum">Week 01</span>
+        </div>
+        <div class="week-header-badges">
+          <span class="week-badge-event-density">Event density: medium</span>
+          <span class="week-badge-holidays">1 Holiday this week</span>
+          <span class="week-badge-exceptions">2 Exceptions in series this week</span>
+        </div>
+      </div>
+      <div>
+        <div id="day-2026-01-05" class="day-passed">
+          <div class="day-header">
+            <span class="day-header-date">05</span>
+            <span class="day-header-dayname">Mo</span>
+          </div>
+          <div class="day-strip">
 
+          </div>
+        </div>
+        <div id="day-2026-01-06" class="day-passed">
+          <div class="day-header">
+            <span class="day-header-date">06</span>
+            <span class="day-header-dayname">Di</span>
+          </div>
+          <div class="day-strip">
+
+          </div>
+        </div>
+        <div id="day-2026-01-07" class="day-today">
+          <div class="day-header">
+            <span class="day-header-date">07</span>
+            <span class="day-header-dayname">Mi</span>
+          </div>
+          <div class="day-strip">
+            
+          </div>
+        </div>
+        <div id="day-2026-01-08" class="day-future">
+          <div class="day-header">
+            <span class="day-header-date">08</span>
+            <span class="day-header-dayname">Do</span>
+          </div>
+          <div class="day-strip">
+
+          </div>
+        </div>
+        <div id="day-2026-01-09" class="day-future">
+          <div class="day-header">
+            <span class="day-header-date">09</span>
+            <span class="day-header-dayname">Fr</span>
+          </div>
+          <div class="day-strip">
+
+          </div>
+        </div>
+        <div id="day-2026-01-10" class="day-future">
+          <div class="day-header">
+            <span class="day-header-date">10</span>
+            <span class="day-header-dayname">Sa</span>
+          </div>
+          <div class="day-strip">
+
+          </div>
+        </div>
+        <div id="day-2026-01-11" class="day-future">
+          <div class="day-header">
+            <span class="day-header-date">11</span>
+            <span class="day-header-dayname">So</span>
+          </div>
+          <div class="day-strip">
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCRIPTS -->
   <script src="/app.js"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js');
     }
   </script>
+
+
 </body>

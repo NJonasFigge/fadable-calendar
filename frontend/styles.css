@@ -1,0 +1,18 @@
+
+@import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap");
+
+:root {
+    --primary-text-color: #333;
+    --secondary-text-color: #777;
+
+    --primary-bg-color: #f9f9f9;
+    --secondary-bg-color: #e0e0e0;
+}
+
+body {
+    background-color: var(--primary-bg-color);
+    color: var(--primary-text-color);
+    font-family: "Avenir", "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
+    text-align: center;
+    margin-top: 50px;
+}

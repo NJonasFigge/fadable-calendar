@@ -1,6 +1,7 @@
 
 import asyncio
 from fastapi import FastAPI, WebSocket
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 
@@ -8,6 +9,14 @@ from pathlib import Path
 FRONTEND_DIR = Path(__file__).parent.parent / "frontend"
 
 APP = FastAPI()
+
+APP.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 STATE = dict(active=False)
 WEBSOCKETS: set[WebSocket] = set()
