@@ -1,3 +1,4 @@
+ics
 fastapi
 uvicorn
 uvicorn[standard]
