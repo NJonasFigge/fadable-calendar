@@ -9,10 +9,63 @@
     --secondary-bg-color: #e0e0e0;
 }
 
+
+/* ========================= Typography ========================= */
+
+body {
+    font-family: 'Nunito', sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+
+/* ========================= Colors & Design ========================= */
+
 body {
     background-color: var(--primary-bg-color);
     color: var(--primary-text-color);
-    font-family: "Avenir", "Nunito", system-ui, -apple-system, "Segoe UI", sans-serif;
-    text-align: center;
-    margin-top: 50px;
 }
+
+div {
+    border: 1px solid var(--secondary-bg-color);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+}
+
+
+/* ========================= Layout ========================= */
+
+#calendar-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.week-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+}
+
+.week-label {
+    font-weight: 700;
+    margin-right: 5px;
+}
+
+.week-widgets {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+}
+
+.week-widget {
+    overflow: hidden;
+}
+
+.week-days {
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+}
+
