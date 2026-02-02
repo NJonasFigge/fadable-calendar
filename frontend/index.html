@@ -1,0 +1,16 @@
+<head>
+  <meta charset="UTF-8">
+  <title>PoC App</title>
+  <link rel="manifest" href="/manifest.json">
+</head>
+<body>
+  <h1>PoC läuft 🚀</h1>
+  <div id="status">–</div>
+
+  <script src="/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+  </script>
+</body>
