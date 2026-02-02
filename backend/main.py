@@ -10,7 +10,7 @@ FRONTEND_DIR = Path(__file__).parent.parent / "frontend"
 APP = FastAPI()
 
 STATE = dict(active=False)
-WEBSOCKETS = set()
+WEBSOCKETS: set[WebSocket] = set()
 
 
 @APP.post("/toggle")

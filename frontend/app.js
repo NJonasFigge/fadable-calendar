@@ -1,16 +1,29 @@
-const status = document.getElementById("status");
+// === Constants ===
 
-function render(state) {
-  status.textContent = state.active ? "AKTIV 🔴" : "INAKTIV ⚪";
+// Get the status field element
+const statusField = document.getElementById("status");
+
+// Establish a WebSocket connection to receive state updates
+const ws = new WebSocket(`ws://${location.host}/ws`);
+
+
+// === Functions ===
+
+// Function to update the status field based on a given state
+function updateState(state) {
+  statusField.textContent = state.active ? "AKTIV 🔴" : "INAKTIV ⚪";
 }
 
+
+// === Main code ===
+
+// Set up WebSocket message handler to update state on receiving messages
+ws.onmessage = (event) => {
+  const state = JSON.parse(event.data);
+  updateState(state);
+};
+
+// Add a click event listener to the body to toggle the state
 document.body.addEventListener("click", () => {
   fetch("/toggle", { method: "POST" });
 });
-
-const ws = new WebSocket(`ws://${location.host}/ws`);
-
-ws.onmessage = (event) => {
-  const state = JSON.parse(event.data);
-  render(state);
-};
