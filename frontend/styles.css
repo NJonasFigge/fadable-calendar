@@ -81,6 +81,12 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-color: var(--primary-bg-color);
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--secondary-bg-color);
 }
 
 .week-label {
