@@ -39,7 +39,7 @@ class Backend:
         return (f'<div class="week-header-labels">'
                 f'  <span class="week-label week-label-year">{iso_year}</span>'
                 f'  <span class="week-label week-label-month">{month_label}</span>'
-                f'  <span class="week-label week-label-separator">|</span>'
+                f'  <span class="week-label week-label-separator">–</span>'
                 f'  <span class="week-label week-label-weeknum">Week {iso_week:02d}</span>'
                 f'</div>')
 

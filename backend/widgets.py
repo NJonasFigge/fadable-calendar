@@ -69,7 +69,7 @@ class DensityWidget(Widget):
         """
         if density >= 1.5:
             return "high"
-        elif density >= 1.0:
+        elif density >= .8:
             return "medium"
         else:
             return "low"

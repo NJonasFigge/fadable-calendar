@@ -1,8 +1,9 @@
 from __future__ import annotations
 
-from icalendar import Calendar
+from typing import Iterator
 from datetime import date
 from pathlib import Path
+from icalendar import Calendar
 
 from . import periods
 
@@ -14,20 +15,17 @@ class PeriodDB:
 
     START_OF_WEEK = 0  # 0 = Monday, 6 = Sunday
 
-    @staticmethod
-    def from_files(filepaths: list[Path]) -> PeriodDB:
+    def __init__(self, calendars: list[Calendar] = []) -> None:
+        self._periods: dict[type, dict[date, periods.Period]] = {}
+        self._calendars = calendars
+
+    def load_ical_files(self, filepaths: Iterator[Path]) -> None:
         """
         Creates a PeriodDB from a list of .ics file paths.
         """
-        calendars = []
         for filepath in filepaths:
             calendar = Calendar.from_ical(filepath.read_text())
-            calendars.append(calendar)
-        return PeriodDB(calendars)
-
-    def __init__(self, calendars: list[Calendar]) -> None:
-        self._periods: dict[type, dict[date, periods.Period]] = {}
-        self._calendars = calendars
+            self._calendars.append(calendar) # type: ignore
     
     def get(self, period_type: type, around_date: date) -> periods.Period:
         """

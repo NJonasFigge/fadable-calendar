@@ -2,11 +2,15 @@
 @import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap");
 
 :root {
-    --primary-text-color: #333;
-    --secondary-text-color: #777;
+    /* Dark mode is default */
+    --primary-text-color: #f9f9f9;
+    --secondary-text-color: #cccccc;
 
-    --primary-bg-color: #f9f9f9;
-    --secondary-bg-color: #e0e0e0;
+    --primary-bg-color: #222;
+    --secondary-bg-color: #444;
+
+    --primary-overlay-color: #000;
+    --secondary-overlay-color: #fff;
 }
 
 
@@ -19,44 +23,15 @@ body {
 }
 
 
-/* ========================= Colors & Design ========================= */
-
-body {
-    background-color: var(--primary-bg-color);
-    color: var(--primary-text-color);
-}
-
-div {
-    border: 1px solid var(--secondary-bg-color);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    border-radius: 8px;
-}
-
-.day-passed {
-    background-color: #d3d3d3;
-    color: var(--secondary-text-color);
-}
-
-.day-today {
-    font-weight: 700;
-    border: 2px solid var(--primary-text-color);
-}
-
-.day-future {
-    background-color: inherit;
-}
-
-
 /* ========================= Layout ========================= */
 
 #calendar-container {
-    max-width: 900px;
     margin: 0 auto;
     padding: 20px;
 }
 
 #calendar-scrollview {
-    max-height: 90vh;
+    width: 100%;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -77,15 +52,24 @@ div {
     background: transparent;
 }
 
+.week-container {
+    width: 100%;
+    max-width: 1000px;
+    margin-top: 2rem;
+    padding: 1rem;
+    justify-self: center;
+}
+
 .week-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px;
+    margin-bottom: 1rem;
 }
 
 .week-label {
     font-weight: 700;
+    font-size: 1.2em;
     margin-right: 5px;
 }
 
@@ -105,3 +89,94 @@ div {
     padding: 10px;
 }
 
+.day-container {
+    flex: 1;
+    padding: .3rem;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px;
+}
+
+.day-header {
+    width: 3rem;
+    grid-column: 1 / 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.day-strip {
+    grid-column: 2 / 3;
+    padding-left: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+
+/* ========================= Colors & Design ========================= */
+
+body {
+    background-color: color-mix(in srgb, var(--primary-overlay-color) 40%, var(--primary-bg-color));
+    color: var(--primary-text-color);
+}
+
+.week-container {
+    background-color: var(--primary-bg-color);
+    border: 1px solid var(--secondary-bg-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.week-widget {
+    border-radius: 999px;
+    border: var(--secondary-bg-color) 1px solid;
+    padding: .2rem .5rem;
+}
+
+.day-passed {
+    background-color: var(--secondary-bg-color);
+    color: var(--secondary-text-color);
+}
+
+.day-today {
+    font-weight: 700;
+    border: 2px solid var(--primary-text-color);
+}
+
+.day-future {
+    background-color: inherit;
+}
+
+.day-strip {
+    background-color: color-mix(in srgb, var(--primary-overlay-color) 40%, var(--primary-bg-color));
+    border-left: 2px solid var(--secondary-bg-color);
+}
+
+.day-passed > .day-strip {
+    position: relative;
+    color: var(--secondary-text-color);
+}
+
+.day-passed > .day-strip::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: var(--secondary-overlay-color);
+    opacity: 0.1;
+    pointer-events: none; /* Allow clicks to pass through */
+}
+
+.day-header-date {
+    font-size: 1.2em;
+    font-weight: 700;
+}
+
+.day-header-dayname {
+    font-size: 0.9em;
+    color: var(--secondary-text-color);
+}

@@ -11,4 +11,8 @@ install: venv
 
 run:
 	@echo "Running the app..."
-	@. venv/bin/activate && uvicorn backend.api:APP --reload
+	@. venv/bin/activate && uvicorn backend.api:APP
+
+run-debug:
+	@echo "Running the app in debug mode..."
+	@. venv/bin/activate && uvicorn backend.api:APP --reload --log-level debug

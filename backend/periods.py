@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from icalendar import Calendar, Component
 from typing import Self
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 
 class Period:
@@ -29,7 +29,17 @@ class Period:
         self._start_date = start_date
         self._end_date = end_date
         self._calendars = calendars
-        self._components: list[Component] = [c for cal in calendars for c in cal.walk() if hasattr(c, 'dtstart') and start_date <= c.dtstart.dt.date() <= end_date] # type: ignore
+        self._components: list[Component] = []
+        for cal in calendars:
+            for c in cal.walk():
+                if hasattr(c, 'DTSTART'):
+                    dtstart: date | datetime = c.DTSTART  # type: ignore
+                    if type(dtstart) is datetime:
+                        event_date = dtstart.date()
+                    else:  # Is already a date
+                        event_date = dtstart
+                    if start_date <= event_date <= end_date:
+                        self._components.append(c)
     
     @property
     def start_date(self): return self._start_date
@@ -90,16 +100,24 @@ class WeekPeriod(Period):
         end_date = start_date + timedelta(days=6)
         super().__init__(start_date, end_date, calendars=calendars)
 
-    
     def _generate_day_html(self, day: date) -> str:
         today = date.today()
         day_class = "day-passed" if day < today else "day-today" if day == today else "day-future"
-        return (f'<div id="day-{day.isoformat()}" class="{day_class}">'
+        day_events = [event for event in self._components if hasattr(event, 'DTSTART') 
+                      and ((type(event.DTSTART) is datetime and event.DTSTART.date() == day) or  # type: ignore
+                           (type(event.DTSTART) is date and event.DTSTART == day))]  # type: ignore
+        events_html = ""
+        for event in day_events:
+            event_summary = event.get('summary', 'No Title')
+            events_html += f'<div class="event">{event_summary}</div>'
+        return (f'<div id="day-{day.isoformat()}" class="{day_class} day-container">'
                 f'  <div class="day-header">'
                 f'    <span class="day-header-date">{day.strftime("%d")}</span>'
                 f'    <span class="day-header-dayname">{day.strftime("%a").replace(".", "")}</span>'
                 f'  </div>'
-                f'  <div class="day-strip"></div>'
+                f'  <div class="day-strip">'
+                f'    {events_html}'
+                f'  </div>'
                 f'</div>')
     
     def generate_html(self, widget_types: list[type]) -> str:
