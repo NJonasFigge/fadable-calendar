@@ -64,12 +64,10 @@ class Backend:
         labels_html = self._generate_labels_html(period)
         widgets_html = self._generate_widgets_html(period)
         body_html = period.generate_html(widget_types=self._state.widget_types)
-        return (f'<div class="week-container">'
-                f'  <div class="week-header">'
-                f'    {labels_html}'
-                f'    {widgets_html}'
-                f'  </div>'
-                f'  <div class="week-body">'
-                f'    {body_html}'
-                f'  </div>'
+        return (f'<div class="week-header">'
+                f'  {labels_html}'
+                f'  {widgets_html}'
+                f'</div>'
+                f'<div class="week-body">'
+                f'  {body_html}'
                 f'</div>')

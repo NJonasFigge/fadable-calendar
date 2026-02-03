@@ -84,7 +84,7 @@ class EventDensityWidget(DensityWidget):
     """
 
     def _core(self, period: periods.Period) -> int:
-        return len(period.components)
+        return len(list(period.events))
 
     def render(self, period_type: type, start_date: date, period_db: PeriodDB) -> str:
         # - Get the period

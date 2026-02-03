@@ -5,7 +5,7 @@ const WEEKS_PER_BATCH = 4;
 
 // - Get references to key DOM elements
 const calendarScrollview = document.getElementById("calendar-scrollview");
-const weeksContainer = document.getElementById("weeks-container");
+const mainScroller = document.getElementById("main-scroller");
 const bufferTop = document.getElementById("scroll-buffer-top");
 const bufferBottom = document.getElementById("scroll-buffer-bottom");
 
@@ -63,8 +63,8 @@ function buildWeekElement(aroundDate) {  // Create a new week element, set its I
   const key = weekKey(aroundDate);
   const weekElement = document.createElement("div");
   weekElement.id = `week-${key}`;
-  weekElement.className = "week";
-  weekElement.innerHTML = "<div class=\"week-loading\">Loading…</div>";
+  weekElement.className = "week-container";
+  weekElement.innerHTML = "<div class=\"week-loading\">Loading...</div>";
   const loadPromise = loadWeekContent(weekElement, aroundDate)
     .finally(() => {
       weekLoadPromises.delete(key);
@@ -80,7 +80,7 @@ function appendWeek(aroundDate) {  // Append a week element to the end of the we
   }
   renderedWeeks.add(key);
   const weekElement = buildWeekElement(aroundDate);
-  weeksContainer.appendChild(weekElement);
+  mainScroller.appendChild(weekElement);
   return weekLoadPromises.get(key) || null;
 }
 
@@ -91,7 +91,7 @@ function prependWeek(aroundDate) {  // Prepend a week element to the beginning o
   }
   renderedWeeks.add(key);
   const weekElement = buildWeekElement(aroundDate);
-  weeksContainer.prepend(weekElement);
+  mainScroller.prepend(weekElement);
   return weekLoadPromises.get(key) || null;
 }
 

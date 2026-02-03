@@ -25,13 +25,22 @@ body {
 
 /* ========================= Layout ========================= */
 
+body {
+    margin: 0;
+    padding: 0;
+}
+
 #calendar-container {
+    height: 100vh;
     margin: 0 auto;
-    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 #calendar-scrollview {
-    width: 100%;
+    width: min(1000px, 100vw);
+    flex: 1;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
@@ -52,9 +61,16 @@ body {
     background: transparent;
 }
 
+.week-loading {
+    width: 90%;
+    height: 90vh;
+    margin-top: 2rem;
+    padding: 1rem;
+    justify-self: center;
+}
+
 .week-container {
-    width: 100%;
-    max-width: 1000px;
+    width: 90%;
     margin-top: 2rem;
     padding: 1rem;
     justify-self: center;
@@ -107,11 +123,19 @@ body {
 }
 
 .day-strip {
+    position: relative;  /* Needed for both events and passed-overlay */
     grid-column: 2 / 3;
     padding-left: 8px;
     display: flex;
     flex-direction: column;
     gap: 6px;
+}
+
+.event {
+    position: absolute;
+    left: var(--data-start-position);
+    right: calc(100% - var(--data-end-position));
+    background-color: var(--data-color);
 }
 
 
@@ -120,6 +144,18 @@ body {
 body {
     background-color: color-mix(in srgb, var(--primary-overlay-color) 40%, var(--primary-bg-color));
     color: var(--primary-text-color);
+}
+
+.week-loading {
+    background-color: var(--primary-bg-color);
+    border: 1px solid var(--secondary-bg-color);
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--secondary-text-color);
+    font-size: 1.5em;
 }
 
 .week-container {
@@ -155,7 +191,6 @@ body {
 }
 
 .day-passed > .day-strip {
-    position: relative;
     color: var(--secondary-text-color);
 }
 

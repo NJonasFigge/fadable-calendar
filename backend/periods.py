@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from icalendar import Calendar, Component
+from icalendar import Calendar, Component, Event, Todo, Journal, FreeBusy
 from typing import Self
-from datetime import date, datetime, timedelta
+from datetime import date, time, datetime, timedelta
 
 
 class Period:
@@ -46,7 +46,15 @@ class Period:
     @property
     def end_date(self): return self._end_date
     @property
-    def components(self): return self._components
+    def components(self): yield from self._components
+    @property
+    def events(self): yield from [c for c in self._components if type(c) is Event]
+    @property
+    def todos(self): yield from [c for c in self._components if type(c) is Todo]
+    @property
+    def journals(self): yield from [c for c in self._components if type(c) is Journal]
+    @property
+    def freebusys(self): yield from [c for c in self._components if type(c) is FreeBusy]
 
     @property
     def previous_period(self) -> Self:
@@ -100,23 +108,41 @@ class WeekPeriod(Period):
         end_date = start_date + timedelta(days=6)
         super().__init__(start_date, end_date, calendars=calendars)
 
-    def _generate_day_html(self, day: date) -> str:
-        today = date.today()
-        day_class = "day-passed" if day < today else "day-today" if day == today else "day-future"
+    def _generate_day_strip_html(self, day: date) -> str:
+        """
+        Generates the HTML for the week strip.
+        """
         day_events = [event for event in self._components if hasattr(event, 'DTSTART') 
                       and ((type(event.DTSTART) is datetime and event.DTSTART.date() == day) or  # type: ignore
                            (type(event.DTSTART) is date and event.DTSTART == day))]  # type: ignore
-        events_html = ""
+        html = ''
         for event in day_events:
-            event_summary = event.get('summary', 'No Title')
-            events_html += f'<div class="event">{event_summary}</div>'
+            event_start_time: time | None = event.DTSTART.time() if type(event.DTSTART) is datetime else None  # type: ignore
+            if event_start_time is not None:
+                event_start_position = (event_start_time.hour * 60 + event_start_time.minute) / (24 * 60) * 100
+                event_end_time: time | None = event.DTEND.time() if hasattr(event, 'DTEND') and type(event.DTEND) is datetime else None  # type: ignore
+                event_end_position = event_start_position + 10  # Default to 10% width if no end time
+                if event_end_time is not None:
+                    event_end_date: date | None = event.DTEND.date() if type(event.DTEND) is datetime else None  # type: ignore
+                    if event_end_date == day:
+                        event_end_position = (event_end_time.hour * 60 + event_end_time.minute) / (24 * 60) * 100
+                event_summary = event.get('summary', 'No Title')
+                event_color = event.get('color', '#888888')
+                html += (f'<div class="event" style="--data-start-position: {event_start_position}%; '
+                         f'--data-end-position: {event_end_position}%; --data-color: {event_color}">{event_summary}</div>')
+        return html
+
+    def _generate_day_html(self, day: date) -> str:
+        today = date.today()
+        day_class = "day-passed" if day < today else "day-today" if day == today else "day-future"
+        strip_html = self._generate_day_strip_html(day)
         return (f'<div id="day-{day.isoformat()}" class="{day_class} day-container">'
                 f'  <div class="day-header">'
                 f'    <span class="day-header-date">{day.strftime("%d")}</span>'
                 f'    <span class="day-header-dayname">{day.strftime("%a").replace(".", "")}</span>'
                 f'  </div>'
                 f'  <div class="day-strip">'
-                f'    {events_html}'
+                f'    {strip_html}'
                 f'  </div>'
                 f'</div>')
     
