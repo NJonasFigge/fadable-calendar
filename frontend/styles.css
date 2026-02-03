@@ -32,6 +32,20 @@ div {
     border-radius: 8px;
 }
 
+.day-passed {
+    background-color: #d3d3d3;
+    color: var(--secondary-text-color);
+}
+
+.day-today {
+    font-weight: 700;
+    border: 2px solid var(--primary-text-color);
+}
+
+.day-future {
+    background-color: inherit;
+}
+
 
 /* ========================= Layout ========================= */
 
@@ -39,6 +53,28 @@ div {
     max-width: 900px;
     margin: 0 auto;
     padding: 20px;
+}
+
+#calendar-scrollview {
+    max-height: 90vh;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
+}
+
+#calendar-scrollview::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
+
+.scroll-buffer {
+    height: 40px;
+    border: none;
+    box-shadow: none;
+    background: transparent;
 }
 
 .week-header {

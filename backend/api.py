@@ -1,15 +1,23 @@
 
 import asyncio
-from fastapi import FastAPI, WebSocket
+from datetime import date
+from fastapi import FastAPI, WebSocket, HTTPException
+from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 
+import backend
+
 
 FRONTEND_DIR = Path(__file__).parent.parent / "frontend"
+WEBSOCKETS: set[WebSocket] = set()
+
+BACKEND = backend.get_backend()
 
 APP = FastAPI()
 
+# - CORS settings (to allow frontend access)
 APP.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -18,21 +26,14 @@ APP.add_middleware(
     allow_headers=["*"],
 )
 
-STATE = dict(active=False)
-WEBSOCKETS: set[WebSocket] = set()
 
-
-@APP.post("/toggle")
-async def toggle_state():
-    # - Toggle the state
-    STATE["active"] = not STATE["active"]
-    # - Notify all connected websockets
-    for websocket in list(WEBSOCKETS):
-        try:
-            await websocket.send_json(STATE)
-        except Exception:
-            pass
-    return STATE
+@APP.get("/api/get_week", response_class=HTMLResponse)
+async def get_week(around_date_str: str) -> str:
+    try:
+        around_date = date.fromisoformat(around_date_str)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="Invalid start date format") from exc
+    return BACKEND.render_period_html(around_date)
 
 
 @APP.websocket("/ws")
@@ -40,8 +41,7 @@ async def get_websocket(ws: WebSocket):
     await ws.accept()
     WEBSOCKETS.add(ws)
     try:
-        # - Initial state senden
-        await ws.send_json(STATE)
+        # - Send initial state
         while True:
             # - Keep the connection alive
             await asyncio.sleep(1)
