@@ -6,12 +6,12 @@ from .period_db import PeriodDB
 
 
 '''
-db   d8b   db d888888b d8888b.  d888b  d88888b d888888b 
-88   I8I   88   `88'   88  `8D 88' Y8b 88'     `~~88~~' 
-88   I8I   88    88    88   88 88      88ooooo    88    
-Y8   I8I   88    88    88   88 88  ooo 88~~~~~    88    
-`8b d8'8b d8'   .88.   88  .8D 88. ~8~ 88.        88    
- `8b8' `8d8'  Y888888P Y8888D'  Y888P  Y88888P    YP    
+d8888b.  .d8b.  .d8888. d88888b       .o88b. db       .d8b.  .d8888. .d8888. d88888b .d8888. 
+88  `8D d8' `8b 88'  YP 88'          d8P  Y8 88      d8' `8b 88'  YP 88'  YP 88'     88'  YP 
+88oooY' 88ooo88 `8bo.   88ooooo      8P      88      88ooo88 `8bo.   `8bo.   88ooooo `8bo.   
+88~~~b. 88~~~88   `Y8b. 88~~~~~      8b      88      88~~~88   `Y8b.   `Y8b. 88~~~~~   `Y8b. 
+88   8D 88   88 db   8D 88.          Y8b  d8 88booo. 88   88 db   8D db   8D 88.     db   8D 
+Y8888P' YP   YP `8888Y' Y88888P       `Y88P' Y88888P YP   YP `8888Y' `8888Y' Y88888P `8888Y' 
 '''
 
 
@@ -25,6 +25,13 @@ class Widget:
     """
 
     LOOKBACK = 4
+    
+    class COLOR_TOKENS:
+        NEUTRAL = 'neutral'
+        SUCCESS = 'success'
+        INFO = 'info'
+        WARNING = 'warning'
+        DANGER = 'danger'
 
     def _core(self, period: periods.Period) -> int | float | str:
         """
@@ -38,6 +45,12 @@ class Widget:
         Renders the widget text.
         """
         raise NotImplementedError()
+
+    def get_color_token(self, value: int | float | str) -> str:
+        """
+        Returns the CSS color token name based on the widget value.
+        """
+        return self.COLOR_TOKENS.NEUTRAL
     
     def highlighted_classnames(self) -> list[str]:
         """
@@ -84,6 +97,82 @@ class DensityWidget(Widget):
 
 
 '''
+db   db  .d88b.  db      d888888b d8888b.  .d8b.  db    db .d8888.  .o88b.  .d88b.  db    db d8b   db d888888b 
+88   88 .8P  Y8. 88        `88'   88  `8D d8' `8b `8b  d8' 88'  YP d8P  Y8 .8P  Y8. 88    88 888o  88 `~~88~~' 
+88ooo88 88    88 88         88    88   88 88ooo88  `8bd8'  `8bo.   8P      88    88 88    88 88V8o 88    88    
+88~~~88 88    88 88         88    88   88 88~~~88    88      `Y8b. 8b      88    88 88    88 88 V8o88    88    
+88   88 `8b  d8' 88booo.   .88.   88  .8D 88   88    88    db   8D Y8b  d8 `8b  d8' 88b  d88 88  V888    88    
+YP   YP  `Y88P'  Y88888P Y888888P Y8888D' YP   YP    YP    `8888Y'  `Y88P'  `Y88P'  ~Y8888P' VP   V8P    YP    
+'''
+
+class HolidaysCountWidget(CountWidget):
+    """
+    Widget that counts holidays over a time period.
+    On hover, it highlights the related holidays in the calendar.
+    """
+
+    def _core(self, period: periods.Period) -> int:
+        return sum(1 for _, _, _, event in period.timed_events if event.categories and "holiday" in (cat.lower() for cat in event.categories))
+
+    def render(self, period_type: type, start_date: date, period_db: PeriodDB) -> str:
+        # - Get the period
+        period = period_db.get(period_type, start_date)
+        count = self._core(period)
+        color_token = self.get_color_token(count)
+        return f'<span class="week-widget week-widget-holidays-count" data-color="{color_token}">{count} holidays this week</span>'
+    
+    def get_color_token(self, value: int | float | str) -> str:
+        if not isinstance(value, (int, float)):
+            return self.COLOR_TOKENS.NEUTRAL  # Handle non-numeric values gracefully (not expected here)
+        if value >= 1:
+            return self.COLOR_TOKENS.SUCCESS
+        else:
+            return self.COLOR_TOKENS.NEUTRAL
+    
+    def highlighted_classnames(self) -> list[str]:
+        return ['event-holiday']
+
+
+'''
+d88888b db    db  .o88b. d88888b d8888b. d888888b d888888b  .d88b.  d8b   db .d8888.  .o88b.  .d88b.  db    db d8b   db d888888b 
+88'     `8b  d8' d8P  Y8 88'     88  `8D `~~88~~'   `88'   .8P  Y8. 888o  88 88'  YP d8P  Y8 .8P  Y8. 88    88 888o  88 `~~88~~' 
+88ooooo  `8bd8'  8P      88ooooo 88oodD'    88       88    88    88 88V8o 88 `8bo.   8P      88    88 88    88 88V8o 88    88    
+88~~~~~  .dPYb.  8b      88~~~~~ 88~~~      88       88    88    88 88 V8o88   `Y8b. 8b      88    88 88    88 88 V8o88    88    
+88.     .8P  Y8. Y8b  d8 88.     88         88      .88.   `8b  d8' 88  V888 db   8D Y8b  d8 `8b  d8' 88b  d88 88  V888    88    
+Y88888P YP    YP  `Y88P' Y88888P 88         YP    Y888888P  `Y88P'  VP   V8P `8888Y'  `Y88P'  `Y88P'  ~Y8888P' VP   V8P    YP    
+'''
+
+class ExceptionsCountWidget(CountWidget):
+    """
+    Widget that counts series exceptions over a time period.
+    On hover, it highlights the related exceptions in the calendar.
+    """
+
+    def _core(self, period: periods.Period) -> int:
+        return len(period.exception_dates)
+
+    def render(self, period_type: type, start_date: date, period_db: PeriodDB) -> str:
+        # - Get the period
+        period = period_db.get(period_type, start_date)
+        count = self._core(period)
+        color_token = self.get_color_token(count)
+        return f'<span class="week-widget week-widget-exceptions-count" data-color="{color_token}">{count} exceptions this week</span>'
+    
+    def get_color_token(self, value: int | float | str) -> str:
+        if not isinstance(value, (int, float)):
+            return self.COLOR_TOKENS.NEUTRAL  # Handle non-numeric values gracefully (not expected here)
+        if value >= 1:
+            return self.COLOR_TOKENS.WARNING
+        elif value >= 5:
+            return self.COLOR_TOKENS.DANGER
+        else:
+            return self.COLOR_TOKENS.NEUTRAL
+    
+    def highlighted_classnames(self) -> list[str]:
+        return ['event-exception']
+
+
+'''
 d88888b db    db d88888b d8b   db d888888b d8888b. d88888b d8b   db .d8888. d888888b d888888b db    db
 88'     88    88 88'     888o  88 `~~88~~' 88  `8D 88'     888o  88 88'  YP   `88'   `~~88~~' `8b  d8'
 88ooooo Y8    8P 88ooooo 88V8o 88    88    88   88 88ooooo 88V8o 88 `8bo.      88       88     `8bd8' 
@@ -91,7 +180,6 @@ d88888b db    db d88888b d8b   db d888888b d8888b. d88888b d8b   db .d8888. d888
 88.      `8bd8'  88.     88  V888    88    88  .8D 88.     88  V888 db   8D   .88.      88       88   
 Y88888P    YP    Y88888P VP   V8P    YP    Y8888D' Y88888P VP   V8P `8888Y' Y888888P    YP       YP   
 '''
-
 
 class EventDensityWidget(DensityWidget):
     """
@@ -116,7 +204,17 @@ class EventDensityWidget(DensityWidget):
         density = self._calculate_density(period, lookback_periods)
         predicate = self._get_predicate(density)
 
-        return f'<span class="week-widget week-widget-event-density">Event density: {predicate}</span>'
+        color_token = self.get_color_token(density)
+        return f'<span class="week-widget week-widget-event-density" data-color="{color_token}">Event density: {predicate}</span>'
+
+    def get_color_token(self, value: int | float | str) -> str:
+        if not isinstance(value, (int, float)):
+            return self.COLOR_TOKENS.NEUTRAL
+        if value >= 1.5:
+            return self.COLOR_TOKENS.DANGER
+        if value >= 0.8:
+            return self.COLOR_TOKENS.WARNING
+        return self.COLOR_TOKENS.SUCCESS
     
     def highlighted_classnames(self) -> list[str]:
         return ["event"]

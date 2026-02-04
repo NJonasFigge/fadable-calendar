@@ -1,18 +1,27 @@
 
 @import url("https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap");
 
+
 :root {
     /* Dark mode is default */
     --primary-text-color: #f9f9f9;
     --secondary-text-color: #cccccc;
+    --tertiary-text-color: #778190;
 
-    --primary-bg-color: #222;
-    --secondary-bg-color: #444;
+    --primary-bg-color: #1f232a;
+    --secondary-bg-color: #323844;
 
     --primary-overlay-color: #000;
     --secondary-overlay-color: #fff;
 
     --event-row-height: 1.6rem;
+
+    --text-color-dimming: 60%;
+    --text-color-neutral: var(--tertiary-text-color);
+    --text-color-success: color-mix(in srgb, var(--tertiary-text-color) var(--text-color-dimming), #6edc84);
+    --text-color-info: color-mix(in srgb, var(--tertiary-text-color) var(--text-color-dimming), #77b8ff);
+    --text-color-warning: color-mix(in srgb, var(--tertiary-text-color) var(--text-color-dimming), #f1c86a);
+    --text-color-danger: color-mix(in srgb, var(--tertiary-text-color) var(--text-color-dimming), #f28b82);
 }
 
 
@@ -225,6 +234,32 @@ body {
     border-radius: 999px;
     border: var(--secondary-bg-color) 1px solid;
     padding: .2rem .5rem;
+    margin-left: .4rem;
+}
+
+.week-widget[data-color="neutral"] {
+    color: var(--text-color-neutral);
+    border-color: var(--text-color-neutral);
+}
+
+.week-widget[data-color="success"] {
+    color: var(--text-color-success);
+    border-color: var(--text-color-success);
+}
+
+.week-widget[data-color="warning"] {
+    color: var(--text-color-warning);
+    border-color: var(--text-color-warning);
+}
+
+.week-widget[data-color="danger"] {
+    color: var(--text-color-danger);
+    border-color: var(--text-color-danger);
+}
+
+.week-widget[data-color="info"] {
+    color: var(--text-color-info);
+    border-color: var(--text-color-info);
 }
 
 .day-passed {

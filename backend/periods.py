@@ -41,6 +41,7 @@ class Period:
         self._start_date = start_date
         self._end_date = end_date
         self._calendars = calendars  # Handles of calendars that also apply to all other periods
+        self._exception_dates: set[datetime] = set()  # Exception dates for recurring events
     
     @property
     def start_date(self): return self._start_date
@@ -85,7 +86,6 @@ class Period:
                     # - Recurring event
                     rrule_prop = next(prop for prop in event.extra if prop.name == 'RRULE')
                     rule = rrulestr(rrule_prop.value, dtstart=event.begin.datetime)
-                    exdates: set[datetime] = set()
 
                     # - Collect EXDATEs (exceptions to the recurrence rule)
                     for prop in event.extra:
@@ -102,7 +102,10 @@ class Period:
                             exdate = datetime.strptime(prop.value, "%Y%m%d").replace(tzinfo=tzinfo)  # Date only
                         else:
                             exdate = datetime.strptime(prop.value, "%Y%m%dT%H%M%S").replace(tzinfo=tzinfo)  # Date and time
-                        exdates.add(exdate)
+                        
+                        # - Add to exception dates if within this period
+                        if self._start_date <= exdate.date() <= self._end_date:
+                            self._exception_dates.add(exdate)
                     
                     # - Generate occurrences for this period
                     period_start = datetime.combine(self._start_date, time.min, tzinfo=event.begin.datetime.tzinfo)
@@ -110,7 +113,7 @@ class Period:
 
                     for occ_start in rule.between(period_start, period_end, inc=True):
                         # -  Skip if in exdates
-                        if occ_start in exdates:
+                        if occ_start in self._exception_dates:
                             continue
                         
                         # - Calculate end time based on duration
@@ -145,6 +148,13 @@ class Period:
         # - Sort events by start time, then by end time
         timed_events.sort(key=lambda item: (item[0], item[1], item[2]))
         return timed_events
+    
+    @property
+    def exception_dates(self) -> set[datetime]:
+        """
+        Returns the set of exception dates for recurring events in this period.
+        """
+        return self._exception_dates
     
     def generate_html(self, widget_types: list[type]) -> str:
         """

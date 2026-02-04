@@ -7,6 +7,15 @@ from . import widgets
 from .period_db import PeriodDB
 
 
+'''
+d8888b.  .d8b.   .o88b. db   dD d88888b d8b   db d8888b. .d8888. d888888b  .d8b.  d888888b d88888b 
+88  `8D d8' `8b d8P  Y8 88 ,8P' 88'     888o  88 88  `8D 88'  YP `~~88~~' d8' `8b `~~88~~' 88'     
+88oooY' 88ooo88 8P      88,8P   88ooooo 88V8o 88 88   88 `8bo.      88    88ooo88    88    88ooooo 
+88~~~b. 88~~~88 8b      88`8b   88~~~~~ 88 V8o88 88   88   `Y8b.    88    88~~~88    88    88~~~~~ 
+88   8D 88   88 Y8b  d8 88 `88. 88.     88  V888 88  .8D db   8D    88    88   88    88    88.     
+Y8888P' YP   YP  `Y88P' YP   YD Y88888P VP   V8P Y8888D' `8888Y'    YP    YP   YP    YP    Y88888P 
+'''
+
 @dataclass
 class BackendState:
     """
@@ -22,8 +31,17 @@ class BackendState:
             raise ValueError("start_of_week must be between 0 (Monday) and 6 (Sunday)")
         # - Default widget types if not provided
         if self.widget_types is NotImplemented:
-            self.widget_types = [widgets.EventDensityWidget]  #, widgets.HolidaysCountWidget, widgets.ExceptionsCountWidget]
+            self.widget_types = [widgets.EventDensityWidget, widgets.HolidaysCountWidget, widgets.ExceptionsCountWidget]
 
+
+'''
+d8888b.  .d8b.   .o88b. db   dD d88888b d8b   db d8888b. 
+88  `8D d8' `8b d8P  Y8 88 ,8P' 88'     888o  88 88  `8D 
+88oooY' 88ooo88 8P      88,8P   88ooooo 88V8o 88 88   88 
+88~~~b. 88~~~88 8b      88`8b   88~~~~~ 88 V8o88 88   88 
+88   8D 88   88 Y8b  d8 88 `88. 88.     88  V888 88  .8D 
+Y8888P' YP   YP  `Y88P' YP   YD Y88888P VP   V8P Y8888D' 
+'''
 
 class Backend:
     def __init__(self, period_db: PeriodDB = NotImplemented, state: BackendState = BackendState()) -> None:
