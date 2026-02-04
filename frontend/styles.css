@@ -42,6 +42,7 @@ Y88888P YP   YP    YP     `Y88P'  ~Y8888P'    YP
 */
 
 body {
+    scroll-behavior: smooth;
     margin: 0;
     padding: 0;
 }
@@ -79,7 +80,7 @@ body {
 
 .week-loading {
     width: 90%;
-    height: 90vh;
+    height: calc(548.8px - 2rem - 2rem);  /* Container height (empirically determined) minus margins and padding */
     margin-top: 2rem;
     padding: 1rem;
     justify-self: center;
@@ -88,6 +89,7 @@ body {
 .week-container {
     width: 90%;
     margin-top: 2rem;
+    scroll-margin-top: 2rem;
     padding: 1rem;
     justify-self: center;
 }
@@ -183,9 +185,6 @@ body {
 
 .week-loading {
     background-color: var(--primary-bg-color);
-    border: 1px solid var(--secondary-bg-color);
-    border-radius: 8px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -198,6 +197,28 @@ body {
     border: 1px solid var(--secondary-bg-color);
     border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.week-loaded {
+    animation: weekFadeIn 500ms ease-out both;
+    will-change: transform, opacity;
+}
+
+@keyframes weekFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .week-loaded {
+        animation: none;
+    }
 }
 
 .week-widget {

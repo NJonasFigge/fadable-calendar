@@ -36,8 +36,10 @@ async function loadWeekContent(parentElement, aroundDate) {
     }
     const html = await response.text();
     parentElement.innerHTML = html;
+    parentElement.classList.add("week-loaded");
   } catch (error) {
     parentElement.innerHTML = "<div class=\"week-error\">Failed to load week content</div>";
+    parentElement.classList.add("week-loaded");
     console.error("Failed to load week content!", error);
   }
 }
@@ -99,6 +101,8 @@ function loadInitialWeeks() {  // Load weeks around the current week
   const initialLoadPromises = [];
   earliestWeekStart = thisWeekStart;
   latestWeekStart = thisWeekStart;
+
+  // - Load weeks before the current week
   for (let i = WEEKS_PER_BATCH; i > 0; i -= 1) {
     const weekStart = addDays(thisWeekStart, -7 * i);
     earliestWeekStart = weekStart;
@@ -107,11 +111,23 @@ function loadInitialWeeks() {  // Load weeks around the current week
       initialLoadPromises.push(loadPromise);
     }
   }
+
+  // - Already try to scroll to the current week while loading the rest
+  const baseScrollKey = weekKey(thisWeekStart);
+  requestAnimationFrame(() => {
+    const baseElement = document.getElementById(`week-${baseScrollKey}`);
+    if (baseElement) {
+      baseElement.scrollIntoView({ block: "start" });
+    }
+  });
+ 
+  // - Load the current week and weeks after it
   const baseLoadPromise = appendWeek(thisWeekStart);
   if (baseLoadPromise) {
     initialLoadPromises.push(baseLoadPromise);
   }
 
+  // - Load weeks after the current week
   for (let i = 1; i <= WEEKS_PER_BATCH; i += 1) {
     const weekStart = addDays(thisWeekStart, 7 * i);
     latestWeekStart = weekStart;
@@ -136,18 +152,50 @@ function loadInitialWeeks() {  // Load weeks around the current week
 }
 
 function loadWeeksBefore() {  // Load weeks before the earliest loaded week
+  // - If we don't have an earliest week (shouldn't happen after initial load), just return
   if (!earliestWeekStart) {
     return;
   }
 
-  const previousScrollHeight = calendarScrollview.scrollHeight;
+  // - Prepare to collect promises for loading weeks before the earliest loaded week
+  const loadPromises = [];
+
+  // - Capture scroll metrics before prepending
+  const scrollTopBefore = calendarScrollview.scrollTop;
+  const scrollHeightBefore = calendarScrollview.scrollHeight;
+
+  // - Prepend weeks before the earliest loaded week
   for (let i = 1; i <= WEEKS_PER_BATCH; i += 1) {
     const weekStart = addDays(earliestWeekStart, -7);
     earliestWeekStart = weekStart;
-    prependWeek(weekStart);
+    const loadPromise = prependWeek(weekStart);
+    if (loadPromise) {
+      loadPromises.push(loadPromise);
+    }
   }
-  const newScrollHeight = calendarScrollview.scrollHeight;
-  calendarScrollview.scrollTop += newScrollHeight - previousScrollHeight;
+
+  // - After prepending, adjust scroll to maintain the visual position
+  const scrollHeightAfterPrepend = calendarScrollview.scrollHeight;
+  const initialDelta = scrollHeightAfterPrepend - scrollHeightBefore;
+  calendarScrollview.scrollTop = scrollTopBefore + initialDelta;
+
+  // - Once all the new weeks are loaded, adjust only if the user hasn't scrolled since prepend
+  if (loadPromises.length) {
+    const expectedScrollTop = scrollTopBefore + initialDelta;
+    Promise.allSettled(loadPromises).then(() => {
+      requestAnimationFrame(() => {
+        const userDelta = Math.abs(calendarScrollview.scrollTop - expectedScrollTop);
+        if (userDelta > 4) {
+          return;
+        }
+        const scrollHeightAfterLoad = calendarScrollview.scrollHeight;
+        const loadDelta = scrollHeightAfterLoad - scrollHeightAfterPrepend;
+        if (loadDelta !== 0) {
+          calendarScrollview.scrollTop += loadDelta;
+        }
+      });
+    });
+  }
 }
 
 function loadWeeksAfter() {  // Load weeks after the latest loaded week
