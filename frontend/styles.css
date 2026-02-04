@@ -362,3 +362,22 @@ body {
 .scroll-to-today:active {
     transform: translate(-50%, 1px);
 }
+
+
+/*
+.d8888. d8888b. d88888b  .o88b. d888888b  .d8b.  db           d88888b db    db 
+88'  YP 88  `8D 88'     d8P  Y8   `88'   d8' `8b 88           88'     `8b  d8' 
+`8bo.   88oodD' 88ooooo 8P         88    88ooo88 88           88ooo    `8bd8'  
+  `Y8b. 88~~~   88~~~~~ 8b         88    88~~~88 88           88~~~    .dPYb.  
+db   8D 88      88.     Y8b  d8   .88.   88   88 88booo.      88      .8P  Y8. 
+`8888Y' 88      Y88888P  `Y88P' Y888888P YP   YP Y88888P      YP      YP    YP 
+*/
+
+.event,
+.day-container {
+    transition: box-shadow 150ms ease;
+}
+
+.is-highlighted {
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.7), 0 0 12px rgba(255, 255, 255, 0.6);
+}

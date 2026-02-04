@@ -15,6 +15,7 @@ const today = new Date();
 const thisWeekStart = getWeekStart(today);
 const renderedWeeks = new Set();
 const weekLoadPromises = new Map();
+let activeHighlightWeek = null;
 
 // =============================== Variables ===============================
 let earliestWeekStart = null;
@@ -301,8 +302,70 @@ function setupScrollToTodayVisibility() {
   mainScroller.addEventListener("DOMNodeInserted", observeOnLoad);
 }
 
+function clearWidgetHighlights() {
+  if (!activeHighlightWeek) {
+    return;
+  }
+  const highlighted = activeHighlightWeek.querySelectorAll(".is-highlighted");
+  highlighted.forEach((element) => {
+    element.classList.remove("is-highlighted");
+  });
+  activeHighlightWeek = null;
+}
+
+function applyWidgetHighlights(widgetElement) {
+  const highlightsRaw = widgetElement.dataset.highlights || "";
+  const highlightClasses = highlightsRaw.split(/\s+/).filter(Boolean);
+  if (!highlightClasses.length) {
+    clearWidgetHighlights();
+    return;
+  }
+
+  const weekElement = widgetElement.closest(".week-container");
+  if (!weekElement) {
+    return;
+  }
+
+  clearWidgetHighlights();
+  activeHighlightWeek = weekElement;
+
+  highlightClasses.forEach((className) => {
+    const matches = weekElement.querySelectorAll(`.${className}`);
+    matches.forEach((element) => {
+      element.classList.add("is-highlighted");
+    });
+  });
+}
+
+function setupWidgetHighlights() {
+  if (!mainScroller) {
+    return;
+  }
+
+  mainScroller.addEventListener("mouseover", (event) => {
+    const widgetElement = event.target.closest(".week-widget");
+    if (!widgetElement) {
+      return;
+    }
+    applyWidgetHighlights(widgetElement);
+  });
+
+  mainScroller.addEventListener("mouseout", (event) => {
+    const widgetElement = event.target.closest(".week-widget");
+    if (!widgetElement) {
+      return;
+    }
+    const relatedTarget = event.relatedTarget;
+    if (relatedTarget && widgetElement.contains(relatedTarget)) {
+      return;
+    }
+    clearWidgetHighlights();
+  });
+}
+
 loadInitialWeeks();
 setupObservers();
+setupWidgetHighlights();
 
 if (scrollToTodayButton) {
   scrollToTodayButton.addEventListener("click", scrollToToday);

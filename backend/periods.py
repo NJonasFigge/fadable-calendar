@@ -246,8 +246,12 @@ class WeekPeriod(Period):
             event_start_position = start_minutes / (24 * 60) * 100
             event_end_position = end_minutes / (24 * 60) * 100
             event_color = next((prop.value for prop in event.extra if prop.name == 'COLOR'), color)
+            event_classes = ["event"]
+            if event.categories and "holiday" in (cat.lower() for cat in event.categories):
+                event_classes.append("event-holiday")
+            event_class_list = " ".join(event_classes)
             html += (f'<div '
-                     f'  class="event"'
+                     f'  class="{event_class_list}"'
                      f'  style="--data-start-position: {event_start_position}%; '
                      f'         --data-end-position: {event_end_position}%; '
                      f'         --data-row: {row_index}; '
@@ -262,7 +266,9 @@ class WeekPeriod(Period):
         today = date.today()
         day_class = "day-passed" if day < today else "day-today" if day == today else "day-future"
         strip_html, total_rows = self._generate_day_strip_html(day)
-        return (f'<div id="day-{day.isoformat()}" class="{day_class} day-container">'
+        has_exception = any(exdate.date() == day for exdate in self.exception_dates)
+        exception_class = " event-exception" if has_exception else ""
+        return (f'<div id="day-{day.isoformat()}" class="{day_class} day-container{exception_class}">'
                 f'  <div class="day-header">'
                 f'    <span class="day-header-date">'
                 f'      {day.strftime("%d")}'

@@ -39,6 +39,12 @@ class Widget:
         To be implemented by subclasses.
         """
         raise NotImplementedError()
+
+    def _highlights_as_html_attribute(self) -> str:
+        highlights = " ".join(self.highlights)
+        if not highlights:
+            return ""
+        return f' data-highlights="{highlights}"'
     
     @property
     def highlights(self) -> list[str]:
@@ -124,7 +130,8 @@ class HolidaysCountWidget(CountWidget):
         period = period_db.get(period_type, start_date)
         count = self._core(period)
         color_token = self.get_color_token(count)
-        return f'<span class="week-widget week-widget-holidays-count" data-color="{color_token}">{count} holidays this week</span>'
+        highlights_attr = self._highlights_as_html_attribute()
+        return f'<span class="week-widget week-widget-holidays-count" data-color="{color_token}"{highlights_attr}>{count} holidays this week</span>'
     
     def get_color_token(self, value: int | float | str) -> str:
         if not isinstance(value, (int, float)):
@@ -162,7 +169,8 @@ class ExceptionsCountWidget(CountWidget):
         period = period_db.get(period_type, start_date)
         count = self._core(period)
         color_token = self.get_color_token(count)
-        return f'<span class="week-widget week-widget-exceptions-count" data-color="{color_token}">{count} exceptions this week</span>'
+        highlights_attr = self._highlights_as_html_attribute()
+        return f'<span class="week-widget week-widget-exceptions-count" data-color="{color_token}"{highlights_attr}>{count} exceptions this week</span>'
     
     def get_color_token(self, value: int | float | str) -> str:
         if not isinstance(value, (int, float)):
@@ -212,7 +220,8 @@ class EventDensityWidget(DensityWidget):
         predicate = self._get_predicate(density)
 
         color_token = self.get_color_token(density)
-        return f'<span class="week-widget week-widget-event-density" data-color="{color_token}">Event density: {predicate}</span>'
+        highlights_attr = self._highlights_as_html_attribute()
+        return f'<span class="week-widget week-widget-event-density" data-color="{color_token}"{highlights_attr}>Event density: {predicate}</span>'
 
     def get_color_token(self, value: int | float | str) -> str:
         if not isinstance(value, (int, float)):
