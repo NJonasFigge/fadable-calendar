@@ -7,6 +7,16 @@ from zoneinfo import ZoneInfo
 from dateutil.rrule import rrulestr
 
 
+'''
+d8888b. d88888b d8888b. d888888b  .d88b.  d8888b. 
+88  `8D 88'     88  `8D   `88'   .8P  Y8. 88  `8D 
+88oodD' 88ooooo 88oobY'    88    88    88 88   88 
+88~~~   88~~~~~ 88`8b      88    88    88 88   88 
+88      88.     88 `88.   .88.   `8b  d8' 88  .8D 
+88      Y88888P 88   YD Y888888P  `Y88P'  Y8888D' 
+'''
+
+
 class Period:
     """
     A time period that can be displayed as one unit in the calendar.
@@ -64,6 +74,16 @@ class Period:
         raise NotImplementedError()
 
 
+'''
+db   d8b   db d88888b d88888b db   dD d8888b. d88888b d8888b. d888888b  .d88b.  d8888b. 
+88   I8I   88 88'     88'     88 ,8P' 88  `8D 88'     88  `8D   `88'   .8P  Y8. 88  `8D 
+88   I8I   88 88ooooo 88ooooo 88,8P   88oodD' 88ooooo 88oobY'    88    88    88 88   88 
+Y8   I8I   88 88~~~~~ 88~~~~~ 88`8b   88~~~   88~~~~~ 88`8b      88    88    88 88   88 
+`8b d8'8b d8' 88.     88.     88 `88. 88      88.     88 `88.   .88.   `8b  d8' 88  .8D 
+ `8b8' `8d8'  Y88888P Y88888P YP   YD 88      Y88888P 88   YD Y888888P  `Y88P'  Y8888D' 
+'''
+
+
 class WeekPeriod(Period):
     """
     A week period.
@@ -96,7 +116,7 @@ class WeekPeriod(Period):
         Generates the HTML for the week strip.
         """
         timed_events: list[tuple[int, int, ics.Event]] = []  # (start_minutes, end_minutes, event)
-        
+
         for calendar in self._calendars:
             for event in calendar.events:
                 if event.all_day:
@@ -233,6 +253,16 @@ class WeekPeriod(Period):
         return "\n".join(html)
 
 
+'''
+.88b  d88.  .d88b.  d8b   db d888888b db   db d8888b. d88888b d8888b. d888888b  .d88b.  d8888b. 
+88'YbdP`88 .8P  Y8. 888o  88 `~~88~~' 88   88 88  `8D 88'     88  `8D   `88'   .8P  Y8. 88  `8D 
+88  88  88 88    88 88V8o 88    88    88ooo88 88oodD' 88ooooo 88oobY'    88    88    88 88   88 
+88  88  88 88    88 88 V8o88    88    88~~~88 88~~~   88~~~~~ 88`8b      88    88    88 88   88 
+88  88  88 `8b  d8' 88  V888    88    88   88 88      88.     88 `88.   .88.   `8b  d8' 88  .8D 
+YP  YP  YP  `Y88P'  VP   V8P    YP    YP   YP 88      Y88888P 88   YD Y888888P  `Y88P'  Y8888D' 
+'''
+
+
 class MonthPeriod(Period):
     """
     A month period.
@@ -267,6 +297,16 @@ class MonthPeriod(Period):
         Generates the HTML representation of this month period.
         """
         raise NotImplementedError()
+    
+
+'''
+db    db d88888b  .d8b.  d8888b. d8888b. d88888b d8888b. d888888b  .d88b.  d8888b. 
+`8b  d8' 88'     d8' `8b 88  `8D 88  `8D 88'     88  `8D   `88'   .8P  Y8. 88  `8D 
+ `8bd8'  88ooooo 88ooo88 88oobY' 88oodD' 88ooooo 88oobY'    88    88    88 88   88 
+   88    88~~~~~ 88~~~88 88`8b   88~~~   88~~~~~ 88`8b      88    88    88 88   88 
+   88    88.     88   88 88 `88. 88      88.     88 `88.   .88.   `8b  d8' 88  .8D 
+   YP    Y88888P YP   YP 88   YD 88      Y88888P 88   YD Y888888P  `Y88P'  Y8888D' 
+'''
 
 
 class YearPeriod(Period):

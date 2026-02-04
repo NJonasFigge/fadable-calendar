@@ -5,7 +5,15 @@ from . import periods
 from .period_db import PeriodDB
 
 
-# ============================== Base classes ==============================
+'''
+db   d8b   db d888888b d8888b.  d888b  d88888b d888888b 
+88   I8I   88   `88'   88  `8D 88' Y8b 88'     `~~88~~' 
+88   I8I   88    88    88   88 88      88ooooo    88    
+Y8   I8I   88    88    88   88 88  ooo 88~~~~~    88    
+`8b d8'8b d8'   .88.   88  .8D 88. ~8~ 88.        88    
+ `8b8' `8d8'  Y888888P Y8888D'  Y888P  Y88888P    YP    
+'''
+
 
 class Widget:
     """
@@ -75,7 +83,15 @@ class DensityWidget(Widget):
             return "low"
 
 
-# ============================== Subclasses ==============================
+'''
+d88888b db    db d88888b d8b   db d888888b d8888b. d88888b d8b   db .d8888. d888888b d888888b db    db
+88'     88    88 88'     888o  88 `~~88~~' 88  `8D 88'     888o  88 88'  YP   `88'   `~~88~~' `8b  d8'
+88ooooo Y8    8P 88ooooo 88V8o 88    88    88   88 88ooooo 88V8o 88 `8bo.      88       88     `8bd8' 
+88~~~~~ `8b  d8' 88~~~~~ 88 V8o88    88    88   88 88~~~~~ 88 V8o88   `Y8b.    88       88       88   
+88.      `8bd8'  88.     88  V888    88    88  .8D 88.     88  V888 db   8D   .88.      88       88   
+Y88888P    YP    Y88888P VP   V8P    YP    Y8888D' Y88888P VP   V8P `8888Y' Y888888P    YP       YP   
+'''
+
 
 class EventDensityWidget(DensityWidget):
     """

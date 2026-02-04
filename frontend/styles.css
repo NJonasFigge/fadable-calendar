@@ -16,7 +16,14 @@
 }
 
 
-/* ========================= Typography ========================= */
+/*
+d888888b db    db d8888b.  .d88b.   d888b  d8888b.  .d8b.  d8888b. db   db db    db 
+`~~88~~' `8b  d8' 88  `8D .8P  Y8. 88' Y8b 88  `8D d8' `8b 88  `8D 88   88 `8b  d8' 
+   88     `8bd8'  88oodD' 88    88 88      88oobY' 88ooo88 88oodD' 88ooo88  `8bd8'  
+   88       88    88~~~   88    88 88  ooo 88`8b   88~~~88 88~~~   88~~~88    88    
+   88       88    88      `8b  d8' 88. ~8~ 88 `88. 88   88 88      88   88    88    
+   YP       YP    88       `Y88P'   Y888P  88   YD YP   YP 88      YP   YP    YP           
+*/
 
 body {
     font-family: 'Nunito', sans-serif;
@@ -25,7 +32,14 @@ body {
 }
 
 
-/* ========================= Layout ========================= */
+/*
+db       .d8b.  db    db  .d88b.  db    db d888888b 
+88      d8' `8b `8b  d8' .8P  Y8. 88    88 `~~88~~' 
+88      88ooo88  `8bd8'  88    88 88    88    88    
+88      88~~~88    88    88    88 88    88    88    
+88booo. 88   88    88    `8b  d8' 88b  d88    88    
+Y88888P YP   YP    YP     `Y88P'  ~Y8888P'    YP    
+*/
 
 body {
     margin: 0;
@@ -153,7 +167,14 @@ body {
 }
 
 
-/* ========================= Colors & Design ========================= */
+/*
+ .o88b.  .d88b.  db       .d88b.  d8888b. .d8888.                  d8888b. d88888b .d8888. d888888b  d888b  d8b   db 
+d8P  Y8 .8P  Y8. 88      .8P  Y8. 88  `8D 88'  YP        db        88  `8D 88'     88'  YP   `88'   88' Y8b 888o  88 
+8P      88    88 88      88    88 88oobY' `8bo.          88        88   88 88ooooo `8bo.      88    88      88V8o 88 
+8b      88    88 88      88    88 88`8b     `Y8b.      C8888D      88   88 88~~~~~   `Y8b.    88    88  ooo 88 V8o88 
+Y8b  d8 `8b  d8' 88booo. `8b  d8' 88 `88. db   8D        88        88  .8D 88.     db   8D   .88.   88. ~8~ 88  V888 
+ `Y88P'  `Y88P'  Y88888P  `Y88P'  88   YD `8888Y'        VP        Y8888D' Y88888P `8888Y' Y888888P  Y888P  VP   V8P 
+ */
 
 body {
     background-color: color-mix(in srgb, var(--primary-overlay-color) 40%, var(--primary-bg-color));
