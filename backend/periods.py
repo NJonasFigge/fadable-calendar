@@ -3,6 +3,8 @@ from __future__ import annotations
 import ics
 from typing import Self
 from datetime import date, time, datetime, timedelta
+from zoneinfo import ZoneInfo
+from dateutil.rrule import rrulestr
 
 
 class Period:
@@ -89,35 +91,123 @@ class WeekPeriod(Period):
         end_date = start_date + timedelta(days=6)
         super().__init__(start_date, end_date, calendars=calendars)
 
-    def _generate_day_strip_html(self, day: date) -> str:
+    def _generate_day_strip_html(self, day: date) -> tuple[str, int]:
         """
         Generates the HTML for the week strip.
         """
-        day_events = [event for calendar in self._calendars for event in calendar.events if event.begin.date() == day]
-        print(day_events)
+        timed_events: list[tuple[int, int, ics.Event]] = []  # (start_minutes, end_minutes, event)
+        
+        for calendar in self._calendars:
+            for event in calendar.events:
+                if event.all_day:
+                    continue  # Skip all-day events for now
+
+                has_rrule = any(prop.name == 'RRULE' for prop in event.extra)
+                if has_rrule:
+                    rrule_prop = next(prop for prop in event.extra if prop.name == 'RRULE')
+                    rule = rrulestr(rrule_prop.value, dtstart=event.begin.datetime)
+                    exdates: set[datetime] = set()
+
+                    # - Collect EXDATEs (exceptions to the recurrence rule)
+                    for prop in event.extra:
+                        # - Skip non-EXDATE properties
+                        if prop.name != 'EXDATE':
+                            continue
+
+                        # - Parse EXDATE value(s)
+                        tzid = None
+                        if hasattr(prop, 'params') and 'TZID' in prop.params:  # Get timezone ID if available
+                            tzid = prop.params['TZID'][0] if prop.params['TZID'] else None
+                        tzinfo = ZoneInfo(tzid) if tzid else event.begin.datetime.tzinfo
+                        if len(prop.value) == 8:
+                            exdate = datetime.strptime(prop.value, "%Y%m%d").replace(tzinfo=tzinfo)  # Date only
+                        else:
+                            exdate = datetime.strptime(prop.value, "%Y%m%dT%H%M%S").replace(tzinfo=tzinfo)  # Date and time
+                        exdates.add(exdate)
+                    
+                    # - Generate occurrences for this day
+                    day_start = datetime.combine(day, time.min, tzinfo=event.begin.datetime.tzinfo)
+                    day_end = datetime.combine(day, time.max, tzinfo=event.begin.datetime.tzinfo)
+
+                    for occ_start in rule.between(day_start, day_end, inc=True):
+                        # -  Skip if in exdates
+                        if occ_start in exdates:
+                            continue
+                        
+                        # - Calculate end time based on duration
+                        occ_end = occ_start + event.duration
+                        
+                        # - Determine start and end minutes within the day
+                        if occ_start.date() < day:  # Starts before this day
+                            start_minutes = 0
+                        else:                       # Starts on this day
+                            start_minutes = occ_start.hour * 60 + occ_start.minute
+                        if occ_end.date() > day:    # Ends after this day
+                            end_minutes = 24 * 60
+                        else:                       # Ends on this day
+                            end_minutes = occ_end.hour * 60 + occ_end.minute
+                        
+                        # - Add to timed events
+                        timed_events.append((start_minutes, end_minutes, event))
+                else:
+                    # - Non-recurring event
+                    if event.begin.date() != day:
+                        continue
+
+                    # - Determine start and end minutes
+                    event_start_time = event.begin.time()
+                    event_end_time = event.end.time()
+                    start_minutes = event_start_time.hour * 60 + event_start_time.minute
+                    end_minutes = event_end_time.hour * 60 + event_end_time.minute
+
+                    # - Add to timed events
+                    timed_events.append((start_minutes, end_minutes, event))
+
+        # - Sort events by start time, then by end time
+        timed_events.sort(key=lambda item: (item[0], item[1]))
+
+        # - Assign events to rows to avoid overlaps
+        row_end_times: list[int] = []
+        events_with_rows: list[tuple[int, int, ics.Event, int]] = []
+        for start_minutes, end_minutes, event in timed_events:
+            row_index = None
+
+            # - Find a row for this event
+            for idx, row_end in enumerate(row_end_times):
+                if row_end <= start_minutes:
+                    # - Can fit in this row
+                    row_index = idx
+                    row_end_times[idx] = end_minutes
+                    break
+            
+            if row_index is None:
+                # - Need a new row
+                row_index = len(row_end_times)
+                row_end_times.append(end_minutes)
+            events_with_rows.append((start_minutes, end_minutes, event, row_index))
+        
+        # - Generate HTML
         html = ''
-        for event in day_events:
-            if event.all_day:
-                continue  # Skip all-day events for now
-            else:
-                event_start_time = event.begin.time()
-                event_start_position = (event_start_time.hour * 60 + event_start_time.minute) / (24 * 60) * 100
-                event_end_time = event.end.time()
-                event_end_position = (event_end_time.hour * 60 + event_end_time.minute) / (24 * 60) * 100
-                event_color = next((prop.value for prop in event.extra if prop.name == 'COLOR'), "#888888")
-                html += (f'<div '
-                         f'  class="event"'
-                         f'  style="--data-start-position: {event_start_position}%; '
-                         f'         --data-end-position: {event_end_position}%; '
-                         f'         --data-color: {event_color}">'
-                         f'  {event.name}'
-                         f'</div>')
-        return html
+        for start_minutes, end_minutes, event, row_index in events_with_rows:
+            event_start_position = start_minutes / (24 * 60) * 100
+            event_end_position = end_minutes / (24 * 60) * 100
+            event_color = next((prop.value for prop in event.extra if prop.name == 'COLOR'), "#888888")
+            html += (f'<div '
+                     f'  class="event"'
+                     f'  style="--data-start-position: {event_start_position}%; '
+                     f'         --data-end-position: {event_end_position}%; '
+                     f'         --data-row: {row_index}; '
+                     f'         --data-color: {event_color}">'
+                     f'  {event.name}'
+                     f'</div>')
+        
+        total_rows = max(1, len(row_end_times))
+        return html, total_rows
 
     def _generate_day_html(self, day: date) -> str:
         today = date.today()
         day_class = "day-passed" if day < today else "day-today" if day == today else "day-future"
-        strip_html = self._generate_day_strip_html(day)
+        strip_html, total_rows = self._generate_day_strip_html(day)
         return (f'<div id="day-{day.isoformat()}" class="{day_class} day-container">'
                 f'  <div class="day-header">'
                 f'    <span class="day-header-date">'
@@ -127,7 +217,7 @@ class WeekPeriod(Period):
                 f'      {day.strftime("%a").replace(".", "")}'
                 f'    </span>'
                 f'  </div>'
-                f'  <div class="day-strip">'
+            f'  <div class="day-strip" style="--data-rows: {total_rows};">'
                 f'    {strip_html}'
                 f'  </div>'
                 f'</div>')

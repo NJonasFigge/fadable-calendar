@@ -11,6 +11,8 @@
 
     --primary-overlay-color: #000;
     --secondary-overlay-color: #fff;
+
+    --event-row-height: 1.6rem;
 }
 
 
@@ -132,16 +134,19 @@ body {
     position: relative;  /* Needed for both events and passed-overlay */
     grid-column: 2 / 3;
     padding-left: 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+    min-height: calc(var(--event-row-height) * var(--data-rows, 1));
 }
 
 .event {
     position: absolute;
     left: var(--data-start-position);
     right: calc(100% - var(--data-end-position));
+    top: calc(var(--data-row) * var(--event-row-height));
+    height: calc(var(--event-row-height) - 2px);
     background-color: var(--data-color);
+    box-sizing: border-box;
+    padding: 2px 6px;
+    border-radius: 6px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

@@ -1,4 +1,5 @@
 ics
+python-dateutil
 fastapi
 uvicorn
 uvicorn[standard]
