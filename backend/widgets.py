@@ -91,7 +91,7 @@ class DensityWidget(Widget):
         if density >= 1.5:
             return "high"
         elif density >= .8:
-            return "medium"
+            return "normal"
         else:
             return "low"
 
@@ -206,6 +206,16 @@ class EventDensityWidget(DensityWidget):
 
         color_token = self.get_color_token(density)
         return f'<span class="week-widget week-widget-event-density" data-color="{color_token}">Event density: {predicate}</span>'
+
+    def get_color_token(self, value: int | float | str) -> str:
+        if not isinstance(value, (int, float)):
+            return self.COLOR_TOKENS.NEUTRAL  # Handle non-numeric values gracefully (not expected here)
+        if value >= 1.5:
+            return self.COLOR_TOKENS.INFO
+        elif value >= .8:
+            return self.COLOR_TOKENS.NEUTRAL
+        else:
+            return self.COLOR_TOKENS.WARNING
     
     def highlighted_classnames(self) -> list[str]:
         return ["event"]
