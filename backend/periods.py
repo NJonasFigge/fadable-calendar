@@ -24,23 +24,27 @@ class Period:
     """
 
     @staticmethod
-    def from_start_date(start_date: date, calendars: list[ics.Calendar] = []):
+    def from_start_date(start_date: date, calendars: list[ics.Calendar] = [],
+                        calendar_colors: list[str] | None = None):
         """
         Creates a Period of the given type that contains the given date.
         """
         raise NotImplementedError()
 
     @staticmethod
-    def from_any_date(any_date: date, start_of_week: int = 0, calendars: list[ics.Calendar] = []) -> Period:
+    def from_any_date(any_date: date, start_of_week: int = 0, calendars: list[ics.Calendar] = [],
+                      calendar_colors: list[str] | None = None):
         """
         Creates a Period of the given type that contains the given date.
         """
         raise NotImplementedError()
     
-    def __init__(self, start_date: date, end_date: date, calendars: list[ics.Calendar] = []):
+    def __init__(self, start_date: date, end_date: date, calendars: list[ics.Calendar] = [], 
+                 calendar_colors: list[str] | None = None):
         self._start_date = start_date
         self._end_date = end_date
         self._calendars = calendars  # Handles of calendars that also apply to all other periods
+        self._calendar_colors = calendar_colors if calendar_colors is not None else ['#777777'] * len(calendars)
         self._exception_dates: set[datetime] = set()  # Exception dates for recurring events
     
     @property
@@ -55,7 +59,8 @@ class Period:
         """
         delta = self._end_date - self._start_date + timedelta(days=1)
         previous_start_date = self._start_date - delta
-        return self.from_start_date(previous_start_date, calendars=self._calendars)
+        return self.from_start_date(previous_start_date, calendars=self._calendars,
+                                    calendar_colors=self._calendar_colors)
 
     @property
     def next_period(self) -> Self:
@@ -64,19 +69,20 @@ class Period:
         """
         delta = self._end_date - self._start_date + timedelta(days=1)
         next_start_date = self._start_date + delta
-        return self.from_start_date(next_start_date, calendars=self._calendars)
+        return self.from_start_date(next_start_date, calendars=self._calendars,
+                                    calendar_colors=self._calendar_colors)
     
     @property
-    def timed_events(self) -> list[tuple[date, int, int, ics.Event]]:
+    def timed_events(self) -> list[tuple[date, int, int, ics.Event, str]]:
         """
         Returns a list of timed events occurring within this period.
-        Each event is represented as a tuple of (occurrence_date, start_minutes, end_minutes)
+        Each event is represented as a tuple of (occurrence_date, start_minutes, end_minutes, event, color),
         where occurrence_date is the date of the occurrence, and start_minutes and end_minutes
         represent the start and end times of the event in minutes from midnight.
         """
-        timed_events: list[tuple[date, int, int, ics.Event]] = []  # (occurrence_date, start_minutes, end_minutes, event)
+        timed_events: list[tuple[date, int, int, ics.Event, str]] = []  # (occurrence_date, start_minutes, end_minutes, event, color)
 
-        for calendar in self._calendars:
+        for calendar, color in zip(self._calendars, self._calendar_colors):
             for event in calendar.events:
                 if event.all_day:
                     continue  # Skip all-day events for now
@@ -130,7 +136,7 @@ class Period:
                             end_minutes = occ_end.hour * 60 + occ_end.minute
                         
                         # - Add to timed events
-                        timed_events.append((occ_start.date(), start_minutes, end_minutes, event))
+                        timed_events.append((occ_start.date(), start_minutes, end_minutes, event, color))
                 else:
                     # - Non-recurring event
                     if event.end.date() < self._start_date or event.begin.date() > self._end_date:
@@ -143,7 +149,7 @@ class Period:
                     end_minutes = event_end_time.hour * 60 + event_end_time.minute
 
                     # - Add to timed events
-                    timed_events.append((event.begin.date(), start_minutes, end_minutes, event))
+                    timed_events.append((event.begin.date(), start_minutes, end_minutes, event, color))
 
         # - Sort events by start time, then by end time
         timed_events.sort(key=lambda item: (item[0], item[1], item[2]))
@@ -179,36 +185,41 @@ class WeekPeriod(Period):
     """
 
     @staticmethod
-    def from_start_date(start_date: date, calendars: list[ics.Calendar] = []) -> Period:
+    def from_start_date(start_date: date, calendars: list[ics.Calendar] = [],
+                        calendar_colors: list[str] | None = None):
         """
         Creates a Period of the given type that contains the given date.
         """
-        return WeekPeriod.from_any_date(start_date, start_of_week=start_date.weekday(), calendars=calendars)  # Trust start_date's weekday as start_of_week
+        return WeekPeriod.from_any_date(start_date, start_of_week=start_date.weekday(), calendars=calendars,
+                                        calendar_colors=calendar_colors)  # Trust start_date's weekday as start_of_week
     
     @staticmethod
-    def from_any_date(any_date: date, start_of_week: int = 0, calendars: list[ics.Calendar] = []) -> Period:
+    def from_any_date(any_date: date, start_of_week: int = 0, calendars: list[ics.Calendar] = [],
+                     calendar_colors: list[str] | None = None):
         """
         Creates a Period of the given type that contains the given date.
         """
         delta_days = (any_date.weekday() - start_of_week) % 7
         start_date = any_date - timedelta(days=delta_days)
-        return WeekPeriod(start_date, start_of_week=start_of_week, calendars=calendars)
+        return WeekPeriod(start_date, start_of_week=start_of_week, calendars=calendars,
+                          calendar_colors=calendar_colors)
     
-    def __init__(self, start_date: date, start_of_week: int = 0, calendars: list[ics.Calendar] = []):
+    def __init__(self, start_date: date, start_of_week: int = 0, calendars: list[ics.Calendar] = [],
+                 calendar_colors: list[str] | None = None):
         delta_days = (start_date.weekday() - start_of_week) % 7
         start_date = start_date - timedelta(days=delta_days)
         end_date = start_date + timedelta(days=6)
-        super().__init__(start_date, end_date, calendars=calendars)
-
+        super().__init__(start_date, end_date, calendars=calendars, calendar_colors=calendar_colors)
+    
     def _generate_day_strip_html(self, day: date) -> tuple[str, int]:
         """
         Generates the HTML for the week strip.
         """
         row_end_times: list[int] = []
-        events_with_rows: list[tuple[int, int, ics.Event, int]] = []
+        events_with_rows: list[tuple[int, int, ics.Event, int, str]] = []
 
         # - Assign events to rows to avoid overlaps
-        for occ_date, start_minutes, end_minutes, event in self.timed_events:
+        for occ_date, start_minutes, end_minutes, event, color in self.timed_events:
             # - Skip events not on this day
             if occ_date != day:
                 continue
@@ -227,14 +238,14 @@ class WeekPeriod(Period):
                 # - Need a new row
                 row_index = len(row_end_times)
                 row_end_times.append(end_minutes)
-            events_with_rows.append((start_minutes, end_minutes, event, row_index))
+            events_with_rows.append((start_minutes, end_minutes, event, row_index, color))
         
         # - Generate HTML
         html = ''
-        for start_minutes, end_minutes, event, row_index in events_with_rows:
+        for start_minutes, end_minutes, event, row_index, color in events_with_rows:
             event_start_position = start_minutes / (24 * 60) * 100
             event_end_position = end_minutes / (24 * 60) * 100
-            event_color = next((prop.value for prop in event.extra if prop.name == 'COLOR'), "#888888")
+            event_color = next((prop.value for prop in event.extra if prop.name == 'COLOR'), color)
             html += (f'<div '
                      f'  class="event"'
                      f'  style="--data-start-position: {event_start_position}%; '
@@ -292,28 +303,31 @@ class MonthPeriod(Period):
     """
 
     @staticmethod
-    def from_start_date(start_date: date, calendars: list[ics.Calendar] = []):
+    def from_start_date(start_date: date, calendars: list[ics.Calendar] = [],
+                        calendar_colors: list[str] | None = None):
         """
         Creates a Period of the given type that contains the given date.
         """
         return MonthPeriod.from_any_date(start_date, calendars=calendars)              
     
     @staticmethod
-    def from_any_date(any_date: date, start_of_week: int = 0, calendars: list[ics.Calendar] = []) -> Period:
+    def from_any_date(any_date: date, start_of_week: int = 0, calendars: list[ics.Calendar] = [],
+                      calendar_colors: list[str] | None = None):
         """
         Creates a Period of the given type that contains the given date.
         """
         start_date = any_date.replace(day=1)
-        return MonthPeriod(start_date, calendars=calendars)
+        return MonthPeriod(start_date, calendars=calendars, calendar_colors=calendar_colors)
     
-    def __init__(self, start_date: date, calendars: list[ics.Calendar] = []):
+    def __init__(self, start_date: date, calendars: list[ics.Calendar] = [],
+                 calendar_colors: list[str] | None = None):
         start_date = start_date.replace(day=1)
         if start_date.month == 12:
             end_date = start_date.replace(year=start_date.year + 1, month=1, day=31)
         else:
             next_month_start = start_date.replace(month=start_date.month + 1, day=1)
             end_date = next_month_start - timedelta(days=1)
-        super().__init__(start_date, end_date, calendars=calendars)
+        super().__init__(start_date, end_date, calendars=calendars, calendar_colors=calendar_colors)
     
     def generate_html(self, widget_types: list[type]) -> str:
         """
@@ -338,24 +352,27 @@ class YearPeriod(Period):
     """
 
     @staticmethod
-    def from_start_date(start_date: date, calendars: list[ics.Calendar] = []) -> Period:
+    def from_start_date(start_date: date, calendars: list[ics.Calendar] = [],
+                        calendar_colors: list[str] | None = None):
         """
         Creates a Period of the given type that contains the given date.
         """
         return YearPeriod.from_any_date(start_date, calendars=calendars)
     
     @staticmethod
-    def from_any_date(any_date: date, start_of_week: int = 0, calendars: list[ics.Calendar] = []) -> Period:
+    def from_any_date(any_date: date, start_of_week: int = 0, calendars: list[ics.Calendar] = [],
+                      calendar_colors: list[str] | None = None):
         """
         Creates a Period of the given type that contains the given date.
         """
         start_date = any_date.replace(month=1, day=1)
-        return YearPeriod(start_date, calendars=calendars)
+        return YearPeriod(start_date, calendars=calendars, calendar_colors=calendar_colors)
     
-    def __init__(self, start_date: date, calendars: list[ics.Calendar] = []):
+    def __init__(self, start_date: date, calendars: list[ics.Calendar] = [],
+                 calendar_colors: list[str] | None = None):
         start_date = start_date.replace(month=1, day=1)
         end_date = start_date.replace(year=start_date.year + 1, month=1, day=1) - timedelta(days=1)
-        super().__init__(start_date, end_date, calendars=calendars)
+        super().__init__(start_date, end_date, calendars=calendars, calendar_colors=calendar_colors)
     
     def generate_html(self, widget_types: list[type]) -> str:
         """

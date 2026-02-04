@@ -308,3 +308,7 @@ if (scrollToTodayButton) {
   scrollToTodayButton.addEventListener("click", scrollToToday);
   setupScrollToTodayVisibility();
 }
+
+if (window.lucide) {
+  window.lucide.createIcons();
+}

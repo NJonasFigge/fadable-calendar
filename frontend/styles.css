@@ -16,12 +16,12 @@
 
     --event-row-height: 1.6rem;
 
-    --text-color-dimming: 60%;
-    --text-color-neutral: var(--tertiary-text-color);
-    --text-color-success: color-mix(in srgb, var(--tertiary-text-color) var(--text-color-dimming), #6edc84);
-    --text-color-info: color-mix(in srgb, var(--tertiary-text-color) var(--text-color-dimming), #77b8ff);
-    --text-color-warning: color-mix(in srgb, var(--tertiary-text-color) var(--text-color-dimming), #f1c86a);
-    --text-color-danger: color-mix(in srgb, var(--tertiary-text-color) var(--text-color-dimming), #f28b82);
+    --signal-color-dimming: 60%;
+    --signal-color-neutral: var(--tertiary-text-color);
+    --signal-color-success: color-mix(in srgb, var(--tertiary-text-color) var(--signal-color-dimming), #6edc84);
+    --signal-color-info: color-mix(in srgb, var(--tertiary-text-color) var(--signal-color-dimming), #77b8ff);
+    --signal-color-warning: color-mix(in srgb, var(--tertiary-text-color) var(--signal-color-dimming), #f1c86a);
+    --signal-color-danger: color-mix(in srgb, var(--tertiary-text-color) var(--signal-color-dimming), #f28b82);
 }
 
 
@@ -86,7 +86,17 @@ body {
     left: 50%;
     bottom: 24px;
     z-index: 10;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
     padding: 0.6rem 1.1rem;
+}
+
+.scroll-to-today .lucide-icon {
+    width: 1rem;
+    height: 1rem;
+    position: relative;
+    top: -1px;
 }
 
 .scroll-buffer {
@@ -247,37 +257,45 @@ body {
 }
 
 .week-widget[data-color="neutral"] {
-    color: var(--text-color-neutral);
-    border-color: var(--text-color-neutral);
+    color: var(--signal-color-neutral);
+    border-color: var(--signal-color-neutral);
 }
 
 .week-widget[data-color="success"] {
-    color: var(--text-color-success);
-    border-color: var(--text-color-success);
+    color: var(--signal-color-success);
+    border-color: var(--signal-color-success);
 }
 
 .week-widget[data-color="warning"] {
-    color: var(--text-color-warning);
-    border-color: var(--text-color-warning);
+    color: var(--signal-color-warning);
+    border-color: var(--signal-color-warning);
 }
 
 .week-widget[data-color="danger"] {
-    color: var(--text-color-danger);
-    border-color: var(--text-color-danger);
+    color: var(--signal-color-danger);
+    border-color: var(--signal-color-danger);
 }
 
 .week-widget[data-color="info"] {
-    color: var(--text-color-info);
-    border-color: var(--text-color-info);
+    color: var(--signal-color-info);
+    border-color: var(--signal-color-info);
+}
+
+.day-container {
+    border-radius: 6px;
+}
+
+.day-header {
+    height: 100%;
 }
 
 .day-passed {
     color: var(--secondary-text-color);
 }
 
-.day-today {
-    font-weight: 700;
-    border: 2px solid var(--primary-text-color);
+.day-today .day-header {
+    background-color: var(--secondary-bg-color);
+    border-radius: 6px;
 }
 
 .day-future {
@@ -285,7 +303,7 @@ body {
 }
 
 .day-strip {
-    background-color: color-mix(in srgb, var(--primary-overlay-color) 40%, var(--primary-bg-color));
+    background-color: color-mix(in srgb, var(--primary-overlay-color) 50%, var(--primary-bg-color));
     border-left: 2px solid var(--secondary-bg-color);
 }
 
@@ -300,8 +318,8 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: var(--secondary-overlay-color);
-    opacity: 0.1;
+    background-color: var(--secondary-bg-color);
+    opacity: 0.15;
     pointer-events: none; /* Allow clicks to pass through */
 }
 
@@ -320,7 +338,7 @@ body {
     border-radius: 999px;
     font-weight: 700;
     color: var(--primary-text-color);
-    background: color-mix(in srgb, var(--primary-overlay-color) 55%, var(--primary-bg-color));
+    background: color-mix(in srgb, var(--secondary-bg-color) 15%, transparent);
     box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);

@@ -112,7 +112,7 @@ class HolidaysCountWidget(CountWidget):
     """
 
     def _core(self, period: periods.Period) -> int:
-        return sum(1 for _, _, _, event in period.timed_events if event.categories and "holiday" in (cat.lower() for cat in event.categories))
+        return sum(1 for _, _, _, event, _ in period.timed_events if event.categories and "holiday" in (cat.lower() for cat in event.categories))
 
     def render(self, period_type: type, start_date: date, period_db: PeriodDB) -> str:
         # - Get the period
@@ -188,7 +188,7 @@ class EventDensityWidget(DensityWidget):
     """
 
     def _core(self, period: periods.Period) -> int:
-        return sum(1 for _, _, _, _ in period.timed_events)
+        return sum(1 for _, _, _, _, _ in period.timed_events)
 
     def render(self, period_type: type, start_date: date, period_db: PeriodDB) -> str:
         # - Get the period
@@ -206,15 +206,6 @@ class EventDensityWidget(DensityWidget):
 
         color_token = self.get_color_token(density)
         return f'<span class="week-widget week-widget-event-density" data-color="{color_token}">Event density: {predicate}</span>'
-
-    def get_color_token(self, value: int | float | str) -> str:
-        if not isinstance(value, (int, float)):
-            return self.COLOR_TOKENS.NEUTRAL
-        if value >= 1.5:
-            return self.COLOR_TOKENS.DANGER
-        if value >= 0.8:
-            return self.COLOR_TOKENS.WARNING
-        return self.COLOR_TOKENS.SUCCESS
     
     def highlighted_classnames(self) -> list[str]:
         return ["event"]
