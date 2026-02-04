@@ -39,6 +39,13 @@ class Widget:
         To be implemented by subclasses.
         """
         raise NotImplementedError()
+    
+    @property
+    def highlights(self) -> list[str]:
+        """
+        Returns the class names to be highlighted on widget hover.
+        """
+        raise NotImplementedError()
 
     def render(self, period_type: type, start_date: date, period_db: PeriodDB) -> str:
         """
@@ -51,12 +58,6 @@ class Widget:
         Returns the CSS color token name based on the widget value.
         """
         return self.COLOR_TOKENS.NEUTRAL
-    
-    def highlighted_classnames(self) -> list[str]:
-        """
-        Returns the class names to be highlighted on widget hover.
-        """
-        raise NotImplementedError()
 
 
 class CountWidget(Widget):
@@ -113,6 +114,10 @@ class HolidaysCountWidget(CountWidget):
 
     def _core(self, period: periods.Period) -> int:
         return sum(1 for _, _, _, event, _ in period.timed_events if event.categories and "holiday" in (cat.lower() for cat in event.categories))
+    
+    @property
+    def highlights(self) -> list[str]:
+        return ['event-holiday']
 
     def render(self, period_type: type, start_date: date, period_db: PeriodDB) -> str:
         # - Get the period
@@ -128,9 +133,6 @@ class HolidaysCountWidget(CountWidget):
             return self.COLOR_TOKENS.SUCCESS
         else:
             return self.COLOR_TOKENS.NEUTRAL
-    
-    def highlighted_classnames(self) -> list[str]:
-        return ['event-holiday']
 
 
 '''
@@ -150,6 +152,10 @@ class ExceptionsCountWidget(CountWidget):
 
     def _core(self, period: periods.Period) -> int:
         return len(period.exception_dates)
+    
+    @property
+    def highlights(self) -> list[str]:
+        return ['event-exception']
 
     def render(self, period_type: type, start_date: date, period_db: PeriodDB) -> str:
         # - Get the period
@@ -167,9 +173,6 @@ class ExceptionsCountWidget(CountWidget):
             return self.COLOR_TOKENS.DANGER
         else:
             return self.COLOR_TOKENS.NEUTRAL
-    
-    def highlighted_classnames(self) -> list[str]:
-        return ['event-exception']
 
 
 '''
@@ -189,6 +192,10 @@ class EventDensityWidget(DensityWidget):
 
     def _core(self, period: periods.Period) -> int:
         return sum(1 for _, _, _, _, _ in period.timed_events)
+    
+    @property
+    def highlights(self) -> list[str]:
+        return ['event']
 
     def render(self, period_type: type, start_date: date, period_db: PeriodDB) -> str:
         # - Get the period
@@ -216,6 +223,3 @@ class EventDensityWidget(DensityWidget):
             return self.COLOR_TOKENS.NEUTRAL
         else:
             return self.COLOR_TOKENS.WARNING
-    
-    def highlighted_classnames(self) -> list[str]:
-        return ["event"]
