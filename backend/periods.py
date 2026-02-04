@@ -108,40 +108,72 @@ class WeekPeriod(Period):
         end_date = start_date + timedelta(days=6)
         super().__init__(start_date, end_date, calendars=calendars)
 
-    def _generate_day_strip_html(self, day: date) -> str:
+    def _generate_day_strip_html(self, day: date) -> tuple[str, int]:
         """
         Generates the HTML for the week strip.
         """
         day_events = [event for event in self._components if hasattr(event, 'DTSTART') 
                       and ((type(event.DTSTART) is datetime and event.DTSTART.date() == day) or  # type: ignore
                            (type(event.DTSTART) is date and event.DTSTART == day))]  # type: ignore
-        html = ''
+        event_items: list[dict[str, object]] = []
         for event in day_events:
             event_start_time: time | None = event.DTSTART.time() if type(event.DTSTART) is datetime else None  # type: ignore
-            if event_start_time is not None:
-                event_start_position = (event_start_time.hour * 60 + event_start_time.minute) / (24 * 60) * 100
-                event_end_time: time | None = event.DTEND.time() if hasattr(event, 'DTEND') and type(event.DTEND) is datetime else None  # type: ignore
-                event_end_position = event_start_position + 10  # Default to 10% width if no end time
-                if event_end_time is not None:
-                    event_end_date: date | None = event.DTEND.date() if type(event.DTEND) is datetime else None  # type: ignore
-                    if event_end_date == day:
-                        event_end_position = (event_end_time.hour * 60 + event_end_time.minute) / (24 * 60) * 100
-                event_summary = event.get('summary', 'No Title')
-                event_color = event.get('color', '#888888')
-                html += (f'<div class="event" style="--data-start-position: {event_start_position}%; '
-                         f'--data-end-position: {event_end_position}%; --data-color: {event_color}">{event_summary}</div>')
-        return html
+            if event_start_time is None:
+                continue
+            event_start_position = (event_start_time.hour * 60 + event_start_time.minute) / (24 * 60) * 100
+            event_end_time: time | None = event.DTEND.time() if hasattr(event, 'DTEND') and type(event.DTEND) is datetime else None  # type: ignore
+            event_end_position = event_start_position + 10  # Default to 10% width if no end time
+            if event_end_time is not None:
+                event_end_date: date | None = event.DTEND.date() if type(event.DTEND) is datetime else None  # type: ignore
+                if event_end_date == day:
+                    event_end_position = (event_end_time.hour * 60 + event_end_time.minute) / (24 * 60) * 100
+            event_end_position = max(event_end_position, event_start_position + 1)
+            event_items.append({
+                "start": event_start_position,
+                "end": event_end_position,
+                "summary": event.get('summary', 'No Title'),
+                "color": event.get('color', '#888888'),
+            })
+
+        event_items.sort(key=lambda item: (item["start"], item["end"]))
+        row_end_positions: list[float] = []
+        for item in event_items:
+            start = float(item["start"])
+            end = float(item["end"])
+            placed = False
+            for row_index, row_end in enumerate(row_end_positions):
+                if start >= row_end:
+                    row_end_positions[row_index] = end
+                    item["row"] = row_index
+                    placed = True
+                    break
+            if not placed:
+                item["row"] = len(row_end_positions)
+                row_end_positions.append(end)
+
+        html = ''
+        for item in event_items:
+            html += (
+                f'<div class="event" '
+                f'style="--data-start-position: {item["start"]}%; '
+                f'--data-end-position: {item["end"]}%; '
+                f'--data-row: {item["row"]}; '
+                f'--data-color: {item["color"]}">{item["summary"]}</div>'
+            )
+
+        row_count = max(len(row_end_positions), 1)
+        return html, row_count
 
     def _generate_day_html(self, day: date) -> str:
         today = date.today()
         day_class = "day-passed" if day < today else "day-today" if day == today else "day-future"
-        strip_html = self._generate_day_strip_html(day)
+        strip_html, strip_rows = self._generate_day_strip_html(day)
         return (f'<div id="day-{day.isoformat()}" class="{day_class} day-container">'
                 f'  <div class="day-header">'
                 f'    <span class="day-header-date">{day.strftime("%d")}</span>'
                 f'    <span class="day-header-dayname">{day.strftime("%a").replace(".", "")}</span>'
                 f'  </div>'
-                f'  <div class="day-strip">'
+            f'  <div class="day-strip" style="--data-rows: {strip_rows};">'
                 f'    {strip_html}'
                 f'  </div>'
                 f'</div>')
