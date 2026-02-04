@@ -62,6 +62,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: relative;
 }
 
 #calendar-scrollview {
@@ -78,6 +79,14 @@ body {
 #calendar-scrollview::-webkit-scrollbar {
     width: 0;
     height: 0;
+}
+
+.scroll-to-today {
+    position: absolute;
+    left: 50%;
+    bottom: 24px;
+    z-index: 10;
+    padding: 0.6rem 1.1rem;
 }
 
 .scroll-buffer {
@@ -304,4 +313,34 @@ body {
 .day-header-dayname {
     font-size: 0.9em;
     color: var(--secondary-text-color);
+}
+
+.scroll-to-today {
+    border: 1px solid color-mix(in srgb, var(--secondary-overlay-color) 35%, var(--secondary-bg-color));
+    border-radius: 999px;
+    font-weight: 700;
+    color: var(--primary-text-color);
+    background: color-mix(in srgb, var(--primary-overlay-color) 55%, var(--primary-bg-color));
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    opacity: 0;
+    pointer-events: none;
+    cursor: pointer;
+    transform: translate(-50%, 8px);
+    transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.scroll-to-today.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(-50%, 0);
+}
+
+.scroll-to-today:hover {
+    background: color-mix(in srgb, var(--secondary-overlay-color) 15%, var(--primary-bg-color));
+}
+
+.scroll-to-today:active {
+    transform: translate(-50%, 1px);
 }

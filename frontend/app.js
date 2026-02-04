@@ -8,6 +8,7 @@ const calendarScrollview = document.getElementById("calendar-scrollview");
 const mainScroller = document.getElementById("main-scroller");
 const bufferTop = document.getElementById("scroll-buffer-top");
 const bufferBottom = document.getElementById("scroll-buffer-bottom");
+const scrollToTodayButton = document.getElementById("scroll-to-today");
 
 // - Calculate the start of the current week (week starts on Monday)
 const today = new Date();
@@ -236,5 +237,74 @@ function setupObservers() {  // Set up IntersectionObservers to load weeks when 
   observer.observe(bufferBottom);
 }
 
+function scrollToToday() {
+  const targetKey = weekKey(today);
+  const targetId = `week-${targetKey}`;
+  let targetElement = document.getElementById(targetId);
+
+  if (!targetElement) {
+    const loadPromise = appendWeek(today);
+    if (loadPromise) {
+      loadPromise.then(() => {
+        targetElement = document.getElementById(targetId);
+        if (targetElement) {
+          targetElement.scrollIntoView({ block: "start", behavior: "smooth" });
+        }
+      });
+      return;
+    }
+    targetElement = document.getElementById(targetId);
+  }
+
+  if (targetElement) {
+    targetElement.scrollIntoView({ block: "start", behavior: "smooth" });
+  }
+}
+
+function setupScrollToTodayVisibility() {
+  if (!scrollToTodayButton) {
+    return;
+  }
+
+  const todayKey = weekKey(today);
+  const todayId = `week-${todayKey}`;
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const entry = entries[0];
+      const shouldShow = !entry || !entry.isIntersecting;
+      scrollToTodayButton.classList.toggle("is-visible", shouldShow);
+    },
+    {
+      root: calendarScrollview,
+      threshold: 0.3,
+    }
+  );
+
+  const attachObserver = () => {
+    const target = document.getElementById(todayId);
+    if (!target) {
+      scrollToTodayButton.classList.add("is-visible");
+      return;
+    }
+    observer.observe(target);
+  };
+
+  attachObserver();
+  const observeOnLoad = () => {
+    const target = document.getElementById(todayId);
+    if (target) {
+      observer.observe(target);
+      mainScroller.removeEventListener("DOMNodeInserted", observeOnLoad);
+    }
+  };
+  mainScroller.addEventListener("DOMNodeInserted", observeOnLoad);
+}
+
 loadInitialWeeks();
 setupObservers();
+
+if (scrollToTodayButton) {
+  scrollToTodayButton.addEventListener("click", scrollToToday);
+  setupScrollToTodayVisibility();
+}
