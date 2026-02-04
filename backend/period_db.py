@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import ics
 from typing import Iterator
 from datetime import date
 from pathlib import Path
-from icalendar import Calendar
+from urllib.request import urlopen
 
 from . import periods
 
@@ -15,7 +16,7 @@ class PeriodDB:
 
     START_OF_WEEK = 0  # 0 = Monday, 6 = Sunday
 
-    def __init__(self, calendars: list[Calendar] = []) -> None:
+    def __init__(self, calendars: list[ics.Calendar] = []) -> None:
         self._periods: dict[type, dict[date, periods.Period]] = {}
         self._calendars = calendars
 
@@ -24,7 +25,16 @@ class PeriodDB:
         Creates a PeriodDB from a list of .ics file paths.
         """
         for filepath in filepaths:
-            calendar = Calendar.from_ical(filepath.read_text())
+            calendar = ics.Calendar(filepath.read_text())
+            self._calendars.append(calendar) # type: ignore
+
+    def load_from_urls(self, urls: Iterator[str]) -> None:
+        """
+        Creates a PeriodDB from a list of .ics URLs.
+        """
+        for url in urls:
+            with urlopen(url) as response:
+                calendar = ics.Calendar(response.read().decode("utf-8"))
             self._calendars.append(calendar) # type: ignore
     
     def get(self, period_type: type, around_date: date) -> periods.Period:
