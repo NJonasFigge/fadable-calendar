@@ -100,7 +100,7 @@ class EventDensityWidget(DensityWidget):
     """
 
     def _core(self, period: periods.Period) -> int:
-        return sum(1 for calendar in period.calendars for _ in calendar.events)
+        return sum(1 for _, _, _, _ in period.timed_events)
 
     def render(self, period_type: type, start_date: date, period_db: PeriodDB) -> str:
         # - Get the period
