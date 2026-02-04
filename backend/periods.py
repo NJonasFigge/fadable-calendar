@@ -40,14 +40,12 @@ class Period:
     def __init__(self, start_date: date, end_date: date, calendars: list[ics.Calendar] = []):
         self._start_date = start_date
         self._end_date = end_date
-        self._calendars = calendars
+        self._calendars = calendars  # Handles of calendars that also apply to all other periods
     
     @property
     def start_date(self): return self._start_date
     @property
     def end_date(self): return self._end_date
-    @property
-    def calendars(self): return self._calendars
 
     @property
     def previous_period(self) -> Self:
@@ -66,6 +64,87 @@ class Period:
         delta = self._end_date - self._start_date + timedelta(days=1)
         next_start_date = self._start_date + delta
         return self.from_start_date(next_start_date, calendars=self._calendars)
+    
+    @property
+    def timed_events(self) -> list[tuple[date, int, int, ics.Event]]:
+        """
+        Returns a list of timed events occurring within this period.
+        Each event is represented as a tuple of (occurrence_date, start_minutes, end_minutes)
+        where occurrence_date is the date of the occurrence, and start_minutes and end_minutes
+        represent the start and end times of the event in minutes from midnight.
+        """
+        timed_events: list[tuple[date, int, int, ics.Event]] = []  # (occurrence_date, start_minutes, end_minutes, event)
+
+        for calendar in self._calendars:
+            for event in calendar.events:
+                if event.all_day:
+                    continue  # Skip all-day events for now
+
+                has_rrule = any(prop.name == 'RRULE' for prop in event.extra)
+                if has_rrule:
+                    # - Recurring event
+                    rrule_prop = next(prop for prop in event.extra if prop.name == 'RRULE')
+                    rule = rrulestr(rrule_prop.value, dtstart=event.begin.datetime)
+                    exdates: set[datetime] = set()
+
+                    # - Collect EXDATEs (exceptions to the recurrence rule)
+                    for prop in event.extra:
+                        # - Skip non-EXDATE properties
+                        if prop.name != 'EXDATE':
+                            continue
+
+                        # - Parse EXDATE value(s)
+                        tzid = None
+                        if hasattr(prop, 'params') and 'TZID' in prop.params:  # Get timezone ID if available
+                            tzid = prop.params['TZID'][0] if prop.params['TZID'] else None
+                        tzinfo = ZoneInfo(tzid) if tzid else event.begin.datetime.tzinfo
+                        if len(prop.value) == 8:
+                            exdate = datetime.strptime(prop.value, "%Y%m%d").replace(tzinfo=tzinfo)  # Date only
+                        else:
+                            exdate = datetime.strptime(prop.value, "%Y%m%dT%H%M%S").replace(tzinfo=tzinfo)  # Date and time
+                        exdates.add(exdate)
+                    
+                    # - Generate occurrences for this period
+                    period_start = datetime.combine(self._start_date, time.min, tzinfo=event.begin.datetime.tzinfo)
+                    period_end = datetime.combine(self._end_date, time.max, tzinfo=event.begin.datetime.tzinfo)
+
+                    for occ_start in rule.between(period_start, period_end, inc=True):
+                        # -  Skip if in exdates
+                        if occ_start in exdates:
+                            continue
+                        
+                        # - Calculate end time based on duration
+                        occ_end = occ_start + event.duration
+                        
+                        # - Determine start and end minutes within the day
+                        if occ_start.date() < self._start_date:  # Starts before this period
+                            start_minutes = 0
+                        else:                       # Starts on this day
+                            start_minutes = occ_start.hour * 60 + occ_start.minute
+                        if occ_end.date() > self._end_date:    # Ends after this period
+                            end_minutes = 24 * 60
+                        else:                       # Ends on this day
+                            end_minutes = occ_end.hour * 60 + occ_end.minute
+                        
+                        # - Add to timed events
+                        timed_events.append((occ_start.date(), start_minutes, end_minutes, event))
+                else:
+                    # - Non-recurring event
+                    if event.end.date() < self._start_date or event.begin.date() > self._end_date:
+                        continue
+
+                    # - Determine start and end minutes
+                    event_start_time = event.begin.time()
+                    event_end_time = event.end.time()
+                    start_minutes = event_start_time.hour * 60 + event_start_time.minute
+                    end_minutes = event_end_time.hour * 60 + event_end_time.minute
+
+                    # - Add to timed events
+                    timed_events.append((event.begin.date(), start_minutes, end_minutes, event))
+
+        # - Sort events by start time, then by end time
+        timed_events.sort(key=lambda item: (item[0], item[1], item[2]))
+        return timed_events
     
     def generate_html(self, widget_types: list[type]) -> str:
         """
@@ -115,81 +194,15 @@ class WeekPeriod(Period):
         """
         Generates the HTML for the week strip.
         """
-        timed_events: list[tuple[int, int, ics.Event]] = []  # (start_minutes, end_minutes, event)
-
-        for calendar in self._calendars:
-            for event in calendar.events:
-                if event.all_day:
-                    continue  # Skip all-day events for now
-
-                has_rrule = any(prop.name == 'RRULE' for prop in event.extra)
-                if has_rrule:
-                    rrule_prop = next(prop for prop in event.extra if prop.name == 'RRULE')
-                    rule = rrulestr(rrule_prop.value, dtstart=event.begin.datetime)
-                    exdates: set[datetime] = set()
-
-                    # - Collect EXDATEs (exceptions to the recurrence rule)
-                    for prop in event.extra:
-                        # - Skip non-EXDATE properties
-                        if prop.name != 'EXDATE':
-                            continue
-
-                        # - Parse EXDATE value(s)
-                        tzid = None
-                        if hasattr(prop, 'params') and 'TZID' in prop.params:  # Get timezone ID if available
-                            tzid = prop.params['TZID'][0] if prop.params['TZID'] else None
-                        tzinfo = ZoneInfo(tzid) if tzid else event.begin.datetime.tzinfo
-                        if len(prop.value) == 8:
-                            exdate = datetime.strptime(prop.value, "%Y%m%d").replace(tzinfo=tzinfo)  # Date only
-                        else:
-                            exdate = datetime.strptime(prop.value, "%Y%m%dT%H%M%S").replace(tzinfo=tzinfo)  # Date and time
-                        exdates.add(exdate)
-                    
-                    # - Generate occurrences for this day
-                    day_start = datetime.combine(day, time.min, tzinfo=event.begin.datetime.tzinfo)
-                    day_end = datetime.combine(day, time.max, tzinfo=event.begin.datetime.tzinfo)
-
-                    for occ_start in rule.between(day_start, day_end, inc=True):
-                        # -  Skip if in exdates
-                        if occ_start in exdates:
-                            continue
-                        
-                        # - Calculate end time based on duration
-                        occ_end = occ_start + event.duration
-                        
-                        # - Determine start and end minutes within the day
-                        if occ_start.date() < day:  # Starts before this day
-                            start_minutes = 0
-                        else:                       # Starts on this day
-                            start_minutes = occ_start.hour * 60 + occ_start.minute
-                        if occ_end.date() > day:    # Ends after this day
-                            end_minutes = 24 * 60
-                        else:                       # Ends on this day
-                            end_minutes = occ_end.hour * 60 + occ_end.minute
-                        
-                        # - Add to timed events
-                        timed_events.append((start_minutes, end_minutes, event))
-                else:
-                    # - Non-recurring event
-                    if event.begin.date() != day:
-                        continue
-
-                    # - Determine start and end minutes
-                    event_start_time = event.begin.time()
-                    event_end_time = event.end.time()
-                    start_minutes = event_start_time.hour * 60 + event_start_time.minute
-                    end_minutes = event_end_time.hour * 60 + event_end_time.minute
-
-                    # - Add to timed events
-                    timed_events.append((start_minutes, end_minutes, event))
-
-        # - Sort events by start time, then by end time
-        timed_events.sort(key=lambda item: (item[0], item[1]))
-
-        # - Assign events to rows to avoid overlaps
         row_end_times: list[int] = []
         events_with_rows: list[tuple[int, int, ics.Event, int]] = []
-        for start_minutes, end_minutes, event in timed_events:
+
+        # - Assign events to rows to avoid overlaps
+        for occ_date, start_minutes, end_minutes, event in self.timed_events:
+            # - Skip events not on this day
+            if occ_date != day:
+                continue
+
             row_index = None
 
             # - Find a row for this event
