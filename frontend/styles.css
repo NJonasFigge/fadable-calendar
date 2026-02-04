@@ -181,7 +181,6 @@ body {
 }
 
 .day-passed {
-    background-color: var(--secondary-bg-color);
     color: var(--secondary-text-color);
 }
 

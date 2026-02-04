@@ -1,11 +1,27 @@
 <head>
+
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Fadable Calendar PoC</title>
+
   <link rel="manifest" href="/manifest.json" crossorigin="use-credentials">
-  <link rel="stylesheet" href="/styles.css">
+  <link id="app-styles" rel="stylesheet" href="/styles.css">
+
+  <script>
+    const cssLink = document.getElementById('app-styles');  // Force reload CSS to avoid caching issues (for development)
+    if (cssLink) {
+      const baseHref = cssLink.getAttribute('href').split('?')[0];
+      cssLink.setAttribute('href', `${baseHref}?v=${Date.now()}`);
+    }
+  </script>
+
+
 </head>
 <body>
+
+
   <div id="calendar-container">
     <div id="calendar-scrollview">
       <div id="scroll-buffer-top" class="scroll-buffer"></div>
