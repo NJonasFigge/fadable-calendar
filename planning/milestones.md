@@ -1,6 +1,14 @@
 
 # Milestones
 
+<!--
+d888888b d8888b. d88888b  .d8b.  
+  `88'   88  `8D 88'     d8' `8b 
+   88    88   88 88ooooo 88ooo88 
+   88    88   88 88~~~~~ 88~~~88 
+  .88.   88  .8D 88.     88   88 
+Y888888P Y8888D' Y88888P YP   YP 
+-->
 
 ## Main Idea
 
@@ -21,17 +29,35 @@ Here are some core features, that make the "Fadable Calendar" different from oth
 + Widgets: Users can add widgets to their calendar, that summarize certain aspects of their schedule. There is a good selection of widgets available and every user can also create their own widgets using a simple widget builder UI.
 
 
+<!--
+d8888b. db       .d8b.  d8b   db d8b   db d88888b d8888b. 
+88  `8D 88      d8' `8b 888o  88 888o  88 88'     88  `8D 
+88oodD' 88      88ooo88 88V8o 88 88V8o 88 88ooooo 88   88 
+88~~~   88      88~~~88 88 V8o88 88 V8o88 88~~~~~ 88   88 
+88      88booo. 88   88 88  V888 88  V888 88.     88  .8D 
+88      Y88888P YP   YP VP   V8P VP   V8P Y88888P Y8888D' 
+-->
+
 ## Planned Features
 
 Here is a list of features and milestones that are considered for the "Fadable Calendar". They can be planned for a certain release by prefixing them with the version number. For details on the versioning scheme, see [below](#versioning-scheme).
 
-+ Implement backend for syncing basic event changes
-+ Design UI/UX to manipulate events
-+ Implement backend for fadable-exclusive features
-+ Implement month and year views
-+ `0.x` Implement bookmarking and annotation features. Today can just be a special bookmark.
-+ `0.5` Give users the possibility to vote for features and improvements to be implemented next (+ add their own).
++ `0.1` Implement backend for syncing basic event changes
++ `0.1` Design UI/UX to manipulate events
++ `0.1` Implement month and year views
++ `0.2` Implement backend for fadable-exclusive features
++ `0.4` Implement bookmarking and annotation features (Today is just a special bookmark)
++ `0.5` Implement voting system for features and improvements to be implemented next (+ encourage proposals).
 
+
+<!--
+d8888b.  .d88b.   .d8b.  d8888b. .88b  d88.  .d8b.  d8888b. 
+88  `8D .8P  Y8. d8' `8b 88  `8D 88'YbdP`88 d8' `8b 88  `8D 
+88oobY' 88    88 88ooo88 88   88 88  88  88 88ooo88 88oodD' 
+88`8b   88    88 88~~~88 88   88 88  88  88 88~~~88 88~~~   
+88 `88. `8b  d8' 88   88 88  .8D 88  88  88 88   88 88      
+88   YD  `Y88P'  YP   YP Y8888D' YP  YP  YP YP   YP 88      
+-->
 
 ## Roadmap
 
@@ -55,7 +81,7 @@ The app now feels like a better alternative to other calendar apps, due to quick
 
 ### `0.4` - Quality of Life
 
-Users can now customize the app to their liking. They can choose from different themes, create their own custom widgets
+Users can now customize the app to their liking. They can choose from different themes and create their own custom widgets. They can also use the bookmarking and annotation features to better keep track of their schedule and thoughts.
 
 
 ### `0.5` - Compatibility
@@ -70,6 +96,15 @@ Plugins are now a thing, and users can create and share their own plugins to add
 
 The app now has the technical capabilities to be hosted on a server publicly and has an onboarding process and tutorial to get new users up to speed.
 
+
+<!--
+db    db d88888b d8888b. .d8888. d888888b  .d88b.  d8b   db .d8888. 
+88    88 88'     88  `8D 88'  YP   `88'   .8P  Y8. 888o  88 88'  YP 
+Y8    8P 88ooooo 88oobY' `8bo.      88    88    88 88V8o 88 `8bo.   
+`8b  d8' 88~~~~~ 88`8b     `Y8b.    88    88    88 88 V8o88   `Y8b. 
+ `8bd8'  88.     88 `88. db   8D   .88.   `8b  d8' 88  V888 db   8D 
+   YP    Y88888P 88   YD `8888Y' Y888888P  `Y88P'  VP   V8P `8888Y' 
+-->
 
 ## Versioning Scheme
 
