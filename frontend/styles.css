@@ -38,6 +38,7 @@ body {
     font-family: 'Nunito', sans-serif;
     font-size: 16px;
     line-height: 1.5;
+    user-select: none;  /* Make text non-selectable, will have to be enabled selectively */
 }
 
 
